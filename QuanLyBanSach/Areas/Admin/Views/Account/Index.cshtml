@@ -1,0 +1,155 @@
+﻿@model List<QuanLyBanSach.Models.ViewModels.AccountViewModel>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Quản lý tài khoản</h3>
+
+    <a asp-action="Create" class="btn btn-success">
+        <i data-feather="plus"></i> Thêm tài khoản
+    </a>
+</div>
+
+<!-- 🔥 FILTER -->
+<div class="mb-3 d-flex gap-2">
+
+    <a asp-action="Index"
+           class="btn @(ViewBag.Type == null ? "btn-primary" : "btn-outline-primary")">
+        Tất cả
+    </a>
+
+    <a asp-action="Index" asp-route-type="0"
+           class="btn @(ViewBag.Type == 0 ? "btn-danger" : "btn-outline-danger")">
+        Admin
+    </a>
+
+    <a asp-action="Index" asp-route-type="1"
+           class="btn @(ViewBag.Type == 1 ? "btn-warning" : "btn-outline-warning")">
+        Nhân viên
+    </a>
+
+    <a asp-action="Index" asp-route-type="2"
+           class="btn @(ViewBag.Type == 2 ? "btn-info" : "btn-outline-info")">
+        Khách
+    </a>
+
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Tên hiển thị</th>
+                    <th>Loại</th>
+                    <th>Khách hàng</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.AccountID</td>
+                        <td>@item.Username</td>
+                        <td>@item.AccountDisplayName</td>
+
+                        <td>
+                            @if (item.AccountType == 0)
+                            {
+                                <span class="badge bg-danger">Admin</span>
+                            }
+                            else if (item.AccountType == 1)
+                            {
+                                <span class="badge bg-warning text-dark">Nhân viên</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">Khách</span>
+                            }
+                        </td>
+
+                        <td>@item.CustomerName</td>
+
+                        <td class="text-center">
+                            <a asp-action="Delete"
+                                   asp-route-id="@item.AccountID"
+                                   asp-route-type="@ViewBag.Type"
+                                   asp-route-page="@ViewBag.CurrentPage"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Xóa tài khoản này?')">
+                                <i data-feather="trash-2"></i>
+                            </a>
+
+                            <a asp-action="ResetPassword"
+                                   asp-route-id="@item.AccountID"
+                                   asp-route-type="@ViewBag.Type"
+                                   asp-route-page="@ViewBag.CurrentPage"
+                                   class="btn btn-info btn-sm"
+                                   onclick="return confirm('Reset mật khẩu về 123?')">
+                                <i data-feather="key"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+<!-- 🔥 PAGINATION -->
+<nav>
+    <ul class="pagination justify-content-center">
+
+        <!-- Prev -->
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                   asp-route-type="@ViewBag.Type">
+                Previous
+            </a>
+        </li>
+
+        <!-- Page numbers -->
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-type="@ViewBag.Type">
+                    @i
+                </a>
+            </li>
+        }
+
+        <!-- Next -->
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                   asp-route-type="@ViewBag.Type">
+                Next
+            </a>
+        </li>
+
+    </ul>
+</nav>

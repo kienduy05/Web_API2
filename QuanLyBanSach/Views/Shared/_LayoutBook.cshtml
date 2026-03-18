@@ -1,0 +1,225 @@
+﻿<!-- License ID: DEVOMATE-SRC-20260316-CTGAOVDUG8 | kienduy1221@gmail.com | 2026-03-16 18:17:28 -->
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Store</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/LayoutBook/css/style.css" />
+
+    <!-- thư viện Mapbox -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.20.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.20.0/mapbox-gl.css' rel='stylesheet' />
+
+    <!-- thư viện chỉ đường -->
+    <link rel="stylesheet"
+          href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css"
+          type="text/css">
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
+</head>
+
+<body>
+    @* Header start *@
+    <!-- Section 1: Top Bar -->
+    <div class="top-bar text-white py-2 px-3 d-flex justify-content-between align-items-center">
+        <div><i class="bi bi-telephone me-2"></i> 0912345678</div>
+        <div class="social-icons">
+            <a href="#"><i class="bi bi-facebook"></i></a>
+            <a href="#"><i class="bi bi-instagram"></i></a>
+            <a href="#"><i class="bi bi-linkedin"></i></a>
+            <a href="#"><i class="bi bi-twitter"></i></a>
+        </div>
+    </div>
+
+    <!-- Section 2: Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <!-- Row 1 -->
+            <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                <img src="~/LayoutBook/images/sample logo 1.png" class="me-2" alt="" srcset="" width="40px">       
+            </a>
+
+            <form class="d-none d-md-flex me-auto ms-3 search-bar">
+                <input class="form-control" type="search" placeholder="Bạn cần tìm Sách gì?" />
+                <button class="btn" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+
+                <div class="d-flex align-items-center gap-3">
+
+                    @if (Context.Session.GetString("Username") != null)
+                    {
+                        <a asp-controller="User" asp-action="Index" class="nav-link">
+                            <i class="bi bi-person"></i>
+                            Chào, @Context.Session.GetString("CustomerName")
+                        </a>
+
+                        <a asp-area=""
+                               asp-controller="Access"
+                               asp-action="Logout"
+                               class="nav-link text-danger">
+                            Logout
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area=""
+                               asp-controller="Access"
+                               asp-action="Login"
+                               class="nav-link">
+                            <i class="bi bi-person"></i> Tài khoản
+                        </a>
+                    }
+
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-cart"></i> Giỏ hàng (01)
+                    </a>
+
+                </div>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Row 2: Menu  -->
+    <div class="nav-links border-top">
+        <div class="container">
+                <ul class="nav justify-content-center py-2">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                           asp-controller="Home" asp-action="Index">Trang chủ</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Book" ? "active" : "")"
+                           asp-controller="Book" asp-action="Index">Sách</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Info" ? "active" : "")"
+                           asp-controller="Info" asp-action="Index">Giới thiệu</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Contact" ? "active" : "")"
+                           asp-controller="Contact" asp-action="Index">Liên hệ với chúng tôi</a>
+                    </li>
+                </ul>
+        </div>
+    </div>
+
+    @* Header end *@
+
+
+    @* Main Content *@
+        @RenderBody()
+    @* End MainContent *@
+
+   
+
+
+
+
+
+    <!-- ===== Footer Section Start ===== -->
+    <footer class="py-5" style="background: linear-gradient(90deg, #fffaf9, #fefbf5);">
+                            <div class="container">
+                                <div class="row gy-4">
+                                    <!-- Logo & Description -->
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <img src="~/LayoutBook/images/sample logo 1.png" alt="Logo" width="80">
+                                            </div>
+                                            <p class="text-muted small mb-4">
+                                                Nơi hội tụ tri thức và cảm hứng đọc sách. Chúng tôi mang đến những đầu sách chất lượng,
+                                                giúp bạn học hỏi, phát triển và khám phá thế giới qua từng trang sách.
+                                            </p>
+                                            <div class="d-flex gap-3">
+                                                <a href="#" class="text-danger fs-5"><i class="bi bi-facebook"></i></a>
+                                                <a href="#" class="text-danger fs-5"><i class="bi bi-linkedin"></i></a>
+                                                <a href="#" class="text-danger fs-5"><i class="bi bi-twitter"></i></a>
+                                                <a href="#" class="text-danger fs-5"><i class="bi bi-youtube"></i></a>
+                                            </div>
+                                            <p class="text-muted small mt-4 mb-0">© 2026 BookStore. All Rights Reserved.</p>
+                                        </div>
+
+                                        <!-- Company Links -->
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-danger mb-3">CÔNG TY</h6>
+                                            <ul class="list-unstyled">
+                                                <li><a href="#" class="text-dark text-decoration-none d-block mb-2">Trang chủ</a></li>
+                                                <li><a href="#" class="text-dark text-decoration-none d-block mb-2">Về chúng tôi</a></li>
+                                                <li><a href="#" class="text-dark text-decoration-none d-block mb-2">Sách</a></li>
+                                                <li><a href="#" class="text-dark text-decoration-none d-block mb-2">Sách điện tử</a></li>
+                                                <li><a href="#" class="text-dark text-decoration-none d-block mb-2">Sách mới</a></li>
+                                                <li><a href="#" class="text-dark text-decoration-none d-block mb-2">Liên hệ</a></li>
+                                                <li><a href="#" class="text-dark text-decoration-none d-block">Blog</a></li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- Latest News -->
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-danger mb-3">TIN MỚI</h6>
+
+                                            <!-- News item 1 -->
+                                            <div class="d-flex mb-3">
+                                                <img src="~/LayoutBook/images/news1.png" alt="News 1" class="rounded me-3" width="70" height="70">
+                                                    <div>
+                                                        <h6 class="fw-semibold text-dark mb-1">Top sách nên đọc năm 2026</h6>
+                                                        <p class="text-muted small mb-1">
+                                                            Khám phá những cuốn sách truyền cảm hứng và phát triển bản thân được yêu thích nhất hiện nay.
+                                                        </p>
+                                                        <small class="text-warning">10 Th3 2026</small>
+                                                    </div>
+                                                </div>
+
+                                                <!-- News item 2 -->
+                                                <div class="d-flex">
+                                                    <img src="~/LayoutBook/images/news2.png" alt="News 2" class="rounded me-3" width="70" height="70">
+                                                        <div>
+                                                            <h6 class="fw-semibold text-dark mb-1">Xu hướng đọc sách hiện đại</h6>
+                                                            <p class="text-muted small mb-1">
+                                                                Sự phát triển của sách điện tử đang thay đổi cách chúng ta tiếp cận tri thức mỗi ngày.
+                                                            </p>
+                                                            <small class="text-warning">15 Th3 2026</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr class="my-4">
+
+                                            <!-- Bottom Links -->
+                                            <div class="text-center">
+                                                <a href="#" class="text-danger small text-decoration-none">Chính sách bảo mật</a>
+                                                <span class="text-muted mx-2">|</span>
+                                                <a href="#" class="text-dark small text-decoration-none">Điều khoản dịch vụ</a>
+                                            </div>
+                                        </div>
+                                    </footer>
+    <!-- ===== Footer Section End ===== -->
+
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+     @RenderSection("Scripts", required: false)
+
+    <!-- JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/LayoutBook/js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,18 @@
+# License ID: DEVOMATE-SRC-20260316-CTGAOVDUG8 | kienduy1221@gmail.com | 2026-03-16 18:17:28
+BookSelling - Personal Use License
+
+Developed and designed by Devomate.
+
+Copyright (c) 2025 Devomate
+
+Permission is granted for **personal and educational use only**. You may:
+
+- Use and modify the template for personal projects  
+- Study and learn from the design  
+
+You may NOT:
+
+- Sell, redistribute, or use for commercial purposes  
+- Claim this design or code as your own  
+
+No warranty is provided. The software is provided "as is".

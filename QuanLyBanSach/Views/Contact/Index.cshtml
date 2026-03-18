@@ -1,0 +1,158 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/Views/Shared/_LayoutBook.cshtml";
+}
+
+<section class="contact-section py-5" style="background-color:#fff;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color:#ED553B;">Liên hệ với chúng tôi</h2>
+            <p class="text-muted">
+                Chúng tôi luôn sẵn sàng lắng nghe bạn! Hãy liên hệ với chúng tôi nếu bạn có câu hỏi, góp ý hoặc cần hỗ trợ.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Contact Info -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <h5 class="fw-bold mb-3 text-orange">Thông tin liên hệ</h5>
+                    <p class="text-muted mb-4">
+                        Nếu bạn cần hỗ trợ hoặc có bất kỳ thắc mắc nào, hãy liên hệ với chúng tôi qua các thông tin bên dưới.
+                    </p>
+
+                    <div class="mb-3 d-flex align-items-start">
+                        <i class="bi bi-geo-alt-fill fs-5 me-3 text-orange"></i>
+                        <div>
+                            <h6 class="fw-semibold mb-1">Địa chỉ</h6>
+                            <p class="text-muted mb-0">Số 3 Cầu Giấy, Hà Nội</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 d-flex align-items-start">
+                        <i class="bi bi-telephone-fill fs-5 me-3 text-orange"></i>
+                        <div>
+                            <h6 class="fw-semibold mb-1">Điện thoại</h6>
+                            <p class="text-muted mb-0">0912345678</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 d-flex align-items-start">
+                        <i class="bi bi-envelope-fill fs-5 me-3 text-orange"></i>
+                        <div>
+                            <h6 class="fw-semibold mb-1">Email</h6>
+                            <p class="text-muted mb-0">bookstoreVA1@gmail.com</p>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+
+            <!-- Right: Contact Form -->
+
+            @* Cho nay se thay Mapbox sau *@
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100 p-0 overflow-hidden">
+                    <div id="map" style="width:100%; height:500px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts {
+    <script>
+        mapboxgl.accessToken = 'YOUR_TOKEN';
+
+        // tọa độ số 3 Cầu Giấy (bạn có thể chỉnh chính xác hơn nếu cần)
+        const destination = [105.80294958741968, 21.02885712340627];
+
+        // khởi tạo map
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: destination,
+            zoom: 14
+        });
+
+        // controls
+        map.addControl(new mapboxgl.NavigationControl());
+        map.addControl(new mapboxgl.FullscreenControl());
+
+        const geolocate = new mapboxgl.GeolocateControl({
+            positionOptions: { enableHighAccuracy: true },
+            trackUserLocation: true
+        });
+        map.addControl(geolocate);
+
+        // scale
+        map.addControl(new mapboxgl.ScaleControl({
+            maxWidth: 80,
+            unit: 'metric'
+        }));
+
+        // marker điểm đích
+        new mapboxgl.Marker({ color: 'red' })
+            .setLngLat(destination)
+            .setPopup(new mapboxgl.Popup().setHTML("<h5>Số 3 Cầu Giấy</h5>"))
+            .addTo(map);
+
+        // directions
+        const directions = new MapboxDirections({
+            accessToken: mapboxgl.accessToken,
+            unit: 'metric',
+            profile: 'mapbox/driving'
+        });
+
+        map.addControl(directions, 'top-left');
+
+        // khi map load → lấy vị trí user và vẽ đường
+        map.on('load', function () {
+
+            // đổi sang tiếng Việt
+            map.setLayoutProperty('country-label', 'text-field', ['get', 'name_vi']);
+
+            // disable zoom dblclick để dùng event riêng
+            map.doubleClickZoom.disable();
+
+            // lấy vị trí user
+            navigator.geolocation.getCurrentPosition(function (position) {
+
+                const userLocation = [
+                    position.coords.longitude,
+                    position.coords.latitude
+                ];
+
+                // set route
+                directions.setOrigin(userLocation);
+                directions.setDestination(destination);
+
+                // marker user
+                new mapboxgl.Marker({ color: 'blue' })
+                    .setLngLat(userLocation)
+                    .setPopup(new mapboxgl.Popup().setHTML("<b>Vị trí của bạn</b>"))
+                    .addTo(map);
+
+            });
+
+        });
+
+        // dblclick → thêm marker
+        map.on('dblclick', function (e) {
+            new mapboxgl.Marker({ color: 'green', draggable: true })
+                .setLngLat(e.lngLat)
+                .addTo(map);
+        });
+
+        // click → popup tọa độ
+        map.on('click', function (e) {
+            new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML("Tọa độ: " + e.lngLat.lng + ", " + e.lngLat.lat)
+                .addTo(map);
+        });
+    </script>
+
+}

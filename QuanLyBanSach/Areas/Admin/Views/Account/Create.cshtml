@@ -1,0 +1,73 @@
+﻿@model QuanLyBanSach.Models.Account
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h3 class="fw-bold mb-3">Thêm tài khoản</h3>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form method="post" class="card p-3">
+
+    <div class="mb-3">
+        <label>Username</label>
+        <input asp-for="Username" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Password</label>
+        <input asp-for="Password" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Tên hiển thị</label>
+        <input asp-for="AccountDisplayName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Loại tài khoản</label>
+        <select asp-for="AccountType" class="form-control" id="accountType">
+            <option value="0">Admin</option>
+            <option value="1">Nhân viên</option>
+            <option value="2">Khách</option>
+        </select>
+    </div>
+
+    <div class="mb-3" id="customerDiv" style="display:none;">
+        <label>Chọn khách hàng</label>
+        <select asp-for="CustomerID" class="form-control">
+            <option value="">-- chọn khách --</option>
+            @foreach (var c in ViewBag.Customers)
+            {
+                <option value="@c.CustomerID">@c.CustomerName</option>
+            }
+        </select>
+    </div>
+
+    <button class="btn btn-primary">Thêm</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    <script>
+        const type = document.getElementById("accountType");
+        const customerDiv = document.getElementById("customerDiv");
+
+        function toggleCustomer() {
+            if (type.value == "2") {
+                customerDiv.style.display = "block";
+            } else {
+                customerDiv.style.display = "none";
+            }
+        }
+
+        type.addEventListener("change", toggleCustomer);
+
+        // chạy lúc load
+        toggleCustomer();
+    </script>
+}

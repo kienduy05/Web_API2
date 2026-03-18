@@ -1,0 +1,54 @@
+﻿@model QuanLyBanSach.Models.Customer
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h3 class="fw-bold mb-3">Thêm khách hàng</h3>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-area="Admin" asp-controller="Customer" asp-action="Create" method="post">
+
+            <div class="mb-3">
+                <label class="form-label">Tên khách hàng</label>
+                <input asp-for="CustomerName" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Giới tính</label>
+                <select asp-for="CustomerGender" class="form-control">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại</label>
+                <input asp-for="CustomerPhone" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="CustomerEmail" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Địa chỉ</label>
+                <input asp-for="CustomerAddress" class="form-control" />
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i data-feather="save"></i> Lưu
+            </button>
+
+            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+
+        </form>
+    </div>
+</div>

@@ -1,0 +1,156 @@
+﻿@model List<QuanLyBanSach.Models.Customer>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Quản lý khách hàng</h3>
+
+    <a asp-area="Admin"
+           asp-controller="Customer"
+           asp-action="Create"
+           class="btn btn-success">
+        <i data-feather="plus"></i> Thêm khách hàng
+    </a>
+</div>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="Nhập từ khóa..."
+               value="@ViewBag.Keyword" />
+    </div>
+
+    <div class="col-md-3">
+        <select name="type" class="form-control">
+            <option value="">-- Chọn kiểu tìm --</option>
+            <option value="name" selected="@(ViewBag.Type == "name")">Tên</option>
+            <option value="email" selected="@(ViewBag.Type == "email")">Email</option>
+            <option value="phone" selected="@(ViewBag.Type == "phone")">SĐT</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            <i data-feather="search"></i> Tìm
+        </button>
+    </div>
+
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên khách hàng</th>
+                    <th>Giới tính</th>
+                    <th>Điện thoại</th>
+                    <th>Email</th>
+                    <th>Địa chỉ</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.CustomerID</td>
+                        <td>@item.CustomerName</td>
+                        <td>@item.CustomerGender</td>
+                        <td>@item.CustomerPhone</td>
+                        <td>@item.CustomerEmail</td>
+                        <td>@item.CustomerAddress</td>
+
+                        <td class="text-center">
+                            <a asp-area="Admin"
+                                   asp-controller="Customer"
+                                   asp-action="Edit"
+                                   asp-route-id="@item.CustomerID"
+                                   class="btn btn-warning btn-sm">
+                                <i data-feather="edit"></i>
+                            </a>
+
+                            <a asp-area="Admin"
+                                   asp-controller="Customer"
+                                   asp-action="Delete"
+                                   asp-route-id="@item.CustomerID"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Bạn có chắc muốn xóa không?')">
+                                <i data-feather="trash-2"></i>
+                            </a>
+
+                            <a asp-area="Admin"
+                                   asp-controller="Account"
+                                   asp-action="ResetPassword"
+                                   asp-route-customerId="@item.CustomerID"
+                                   class="btn btn-info btn-sm">
+                                <i data-feather="key"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+<nav>
+    <ul class="pagination justify-content-center">
+
+        <!-- Previous -->
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-type="@ViewBag.Type">
+                Previous
+            </a>
+        </li>
+
+        <!-- Page numbers -->
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-keyword="@ViewBag.Keyword"
+                       asp-route-type="@ViewBag.Type">
+                    @i
+                </a>
+            </li>
+        }
+
+        <!-- Next -->
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-type="@ViewBag.Type">
+                Next
+            </a>
+        </li>
+
+    </ul>
+</nav>
