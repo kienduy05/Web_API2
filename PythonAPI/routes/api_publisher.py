@@ -25,7 +25,36 @@ def get_all_publisher():
 
     except Exception as e:
         return flask.jsonify({"mess": str(e)}), 500
+@publisher_bp.route('/publisher/search', methods=['GET'])
+def search_publisher():
+    try:
+        keyword = flask.request.args.get("keyword", "")
+        type_search = flask.request.args.get("type", "")
 
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        if type_search == "name":
+            query = "SELECT * FROM Publisher WHERE PublisherName LIKE ?"
+        elif type_search == "address":
+            query = "SELECT * FROM Publisher WHERE PublisherAddress LIKE ?"
+        elif type_search == "phone":
+            query = "SELECT * FROM Publisher WHERE PublisherPhone LIKE ?"
+        else:
+            return flask.jsonify([])
+
+        cursor.execute(query, (f"%{keyword}%",))
+
+        keys = [col[0] for col in cursor.description]
+        results = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return flask.jsonify(results)
+
+    except Exception as e:
+        return flask.jsonify({"mess": str(e)}), 500
 # GET BY ID
 @publisher_bp.route('/publisher/getbyid/<id>', methods=['GET'])
 def get_publisher_by_id(id):
