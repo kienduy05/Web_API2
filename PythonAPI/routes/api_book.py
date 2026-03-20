@@ -137,3 +137,32 @@ def delete_book(id):
     except Exception as e:
 
         return flask.jsonify({"mess": "Khong the xoa vi sach dang co trong don hang", "error": str(e)}), 400
+@book_bp.route('/book/search', methods=['GET'])
+def search_book():
+    try:
+        keyword = flask.request.args.get("keyword", "")
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        query = """
+                SELECT b.*, c.BookCategoryName, a.AuthorName, p.PublisherName
+                FROM Book b
+                LEFT JOIN BookCategory c ON b.BookCategoryID = c.BookCategoryID
+                LEFT JOIN Author a ON b.BookAuthorID = a.AuthorID
+                LEFT JOIN Publisher p ON b.BookPublisherID = p.PublisherID
+                WHERE b.BookName LIKE ?
+                """
+
+        cursor.execute(query, (f"%{keyword}%",))
+
+        keys = [col[0] for col in cursor.description]
+        results = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return flask.jsonify(results)
+
+    except Exception as e:
+        return flask.jsonify({"mess": str(e)}), 500

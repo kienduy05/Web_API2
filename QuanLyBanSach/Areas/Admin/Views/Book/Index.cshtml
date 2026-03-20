@@ -1,0 +1,145 @@
+﻿@model List<QuanLyBanSach.Models.Book>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Quản lý sách</h3>
+    <a asp-area="Admin" asp-controller="Book" asp-action="Create"
+           class="btn btn-success">
+        <i data-feather="plus"></i> Thêm sách
+    </a>
+</div>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="Tìm tên sách..."
+               value="@ViewBag.Keyword" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            <i data-feather="search"></i> Tìm
+        </button>
+    </div>
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên sách</th>
+                    <th>Danh mục</th>
+                    <th>Tác giả</th>
+                    <th>Nhà xuất bản</th>
+                    <th>Giá</th>
+                    <th>Tồn kho</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.BookImage))
+                            {
+                                <img src="~/images/books/@item.BookImage"
+                                     style="width:50px;height:65px;object-fit:cover;border-radius:4px;" />
+                            }
+                            else
+                            {
+                                <div style="width:50px;height:65px;background:#eee;
+                                    border-radius:4px;display:flex;align-items:center;
+                                    justify-content:center;font-size:11px;color:gray;">
+                                    No img
+                                </div>
+                            }
+                        </td>
+                        <td>@item.BookName</td>
+                        <td>@item.BookCategoryName</td>
+                        <td>@item.AuthorName</td>
+                        <td>@item.PublisherName</td>
+                        <td>@item.BookPrice.ToString("N0") ₫</td>
+                        <td>@item.BookQuantity</td>
+                        <td>
+                            @if (item.BookStatus == 1)
+                            {
+                                <span class="badge bg-success">Đang bán</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Ngừng bán</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-area="Admin"
+                                   asp-controller="Book"
+                                   asp-action="Edit"
+                                   asp-route-id="@item.BookID"
+                                   class="btn btn-warning btn-sm">
+                                <i data-feather="edit"></i>
+                            </a>
+                            <a asp-area="Admin"
+                                   asp-controller="Book"
+                                   asp-action="Delete"
+                                   asp-route-id="@item.BookID"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Bạn có chắc muốn xóa không?')">
+                                <i data-feather="trash-2"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<nav>
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                   asp-route-keyword="@ViewBag.Keyword">
+                Previous
+            </a>
+        </li>
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-keyword="@ViewBag.Keyword">
+                    @i
+                </a>
+            </li>
+        }
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                   asp-route-keyword="@ViewBag.Keyword">
+                Next
+            </a>
+        </li>
+    </ul>
+</nav>

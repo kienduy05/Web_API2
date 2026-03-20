@@ -1,0 +1,203 @@
+﻿@model List<QuanLyBanSach.Models.Author>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Tác giả</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAdd">
+        <i data-feather="plus"></i> Thêm tác giả
+    </button>
+</div>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4 position-relative">
+        <input type="text" name="keyword" id="searchInput" class="form-control"
+               placeholder="Tìm tên tác giả..."
+               value="@ViewBag.Keyword"
+               autocomplete="off"
+               oninput="filterSuggest(this.value)" />
+        <ul id="suggestList" class="list-group position-absolute w-100 z-3"
+            style="display:none; top:100%; max-height:200px; overflow-y:auto; cursor:pointer">
+        </ul>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            <i data-feather="search"></i> Tìm
+        </button>
+    </div>
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên tác giả</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.AuthorID</td>
+                        <td>@item.AuthorName</td>
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-sm"
+                                    onclick="openEdit(@item.AuthorID, '@item.AuthorName')">
+                                <i data-feather="edit"></i>
+                            </button>
+                            <a asp-area="Admin"
+                                   asp-controller="Author"
+                                   asp-action="Delete"
+                                   asp-route-id="@item.AuthorID"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Bạn có chắc muốn xóa không?')">
+                                <i data-feather="trash-2"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<nav>
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                   asp-route-keyword="@ViewBag.Keyword">
+                Previous
+            </a>
+        </li>
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-keyword="@ViewBag.Keyword">
+                    @i
+                </a>
+            </li>
+        }
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                   asp-route-keyword="@ViewBag.Keyword">
+                Next
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- Modal Thêm -->
+<div class="modal fade" id="modalAdd" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-area="Admin" asp-controller="Author" asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm tác giả mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Tên tác giả</label>
+                    <input name="AuthorName" class="form-control"
+                           placeholder="VD: Nguyễn Nhật Ánh..." required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-success">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa -->
+<div class="modal fade" id="modalEdit" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-area="Admin" asp-controller="Author" asp-action="Edit" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật tác giả</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editId" name="AuthorID" />
+                    <label class="form-label">Tên tác giả</label>
+                    <input id="editName" name="AuthorName" class="form-control" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-warning">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const allAuthors = @Html.Raw(
+                    Newtonsoft.Json.JsonConvert.SerializeObject(
+                            ViewBag.AllAuthors ?? new List<string>()
+                    )
+            );
+
+        function filterSuggest(val) {
+            const list = document.getElementById('suggestList');
+            list.innerHTML = '';
+            if (!val.trim()) { list.style.display = 'none'; return; }
+
+            const filtered = allAuthors.filter(x =>
+                x.toLowerCase().includes(val.toLowerCase())
+            );
+
+            if (filtered.length === 0) { list.style.display = 'none'; return; }
+
+            filtered.forEach(name => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-action';
+                li.textContent = name;
+                li.onclick = () => {
+                    document.getElementById('searchInput').value = name;
+                    list.style.display = 'none';
+                };
+                list.appendChild(li);
+            });
+            list.style.display = 'block';
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('searchInput').contains(e.target)) {
+                document.getElementById('suggestList').style.display = 'none';
+            }
+        });
+
+        function openEdit(id, name) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            new bootstrap.Modal(document.getElementById('modalEdit')).show();
+        }
+    </script>
+}

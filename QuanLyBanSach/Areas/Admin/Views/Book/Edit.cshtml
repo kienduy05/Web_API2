@@ -1,0 +1,135 @@
+﻿@model QuanLyBanSach.Models.Book
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Cập nhật sách</h3>
+    <a asp-area="Admin" asp-controller="Book" asp-action="Index"
+           class="btn btn-secondary">
+        <i data-feather="arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-area="Admin" asp-controller="Book" asp-action="Edit"
+              method="post" enctype="multipart/form-data">
+
+            <input type="hidden" name="BookID" value="@Model.BookID" />
+            <input type="hidden" name="BookImage" value="@Model.BookImage" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Tên sách</label>
+                    <input name="BookName" class="form-control"
+                           value="@Model.BookName" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Danh mục</label>
+                    <select name="BookCategoryID" class="form-control" required>
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach (var cat in ViewBag.Categories)
+                        {
+                            <option value="@cat.BookCategoryID"
+                                    selected="@(cat.BookCategoryID == Model.BookCategoryID)">
+                                @cat.BookCategoryName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Tác giả</label>
+                    <select name="BookAuthorID" class="form-control" required>
+                        <option value="">-- Chọn tác giả --</option>
+                        @foreach (var author in ViewBag.Authors)
+                        {
+                            <option value="@author.AuthorID"
+                                    selected="@(author.AuthorID == Model.BookAuthorID)">
+                                @author.AuthorName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nhà xuất bản</label>
+                    <select name="BookPublisherID" class="form-control" required>
+                        <option value="">-- Chọn NXB --</option>
+                        @foreach (var pub in ViewBag.Publishers)
+                        {
+                            <option value="@pub.PublisherID"
+                                    selected="@(pub.PublisherID == Model.BookPublisherID)">
+                                @pub.PublisherName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Mô tả</label>
+                    <textarea name="BookDescription" class="form-control"
+                              rows="3">@Model.BookDescription</textarea>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Giá (₫)</label>
+                    <input name="BookPrice" type="number" class="form-control"
+                           min="0" value="@Model.BookPrice" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Số lượng</label>
+                    <input name="BookQuantity" type="number" class="form-control"
+                           min="0" value="@Model.BookQuantity" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="BookStatus" class="form-control">
+                        <option value="1" selected="@(Model.BookStatus == 1)">Đang bán</option>
+                        <option value="0" selected="@(Model.BookStatus == 0)">Ngừng bán</option>
+                    </select>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Ảnh bìa hiện tại</label>
+                    <div class="mb-2">
+                        @if (!string.IsNullOrEmpty(Model.BookImage))
+                        {
+                            <img src="~/images/books/@Model.BookImage"
+                                 style="height:120px;object-fit:cover;border-radius:4px;" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa có ảnh</span>
+                        }
+                    </div>
+                    <label class="form-label">Đổi ảnh mới (để trống nếu không đổi)</label>
+                    <input name="imageFile" type="file" class="form-control"
+                           accept="image/*" onchange="previewNewImage(this)" />
+                    <div class="mt-2">
+                        <img id="newImagePreview"
+                             style="height:120px;object-fit:cover;border-radius:4px;display:none;" />
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning">Lưu</button>
+                <a asp-area="Admin" asp-controller="Book" asp-action="Index"
+                   class="btn btn-secondary">Huỷ</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewNewImage(input) {
+            const preview = document.getElementById('newImagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
