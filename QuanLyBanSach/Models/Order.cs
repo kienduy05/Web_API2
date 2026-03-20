@@ -13,7 +13,7 @@
         public string ReceiverPhone { get; set; }
 
         public string ReceiverAddress { get; set; }
-    
+
         public decimal OrderTotalAmount { get; set; }
 
         public int OrderStatus { get; set; }

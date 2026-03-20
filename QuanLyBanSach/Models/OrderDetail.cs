@@ -8,6 +8,8 @@ namespace QuanLyBanSach.Models
 
         public int BookID { get; set; }
 
+        public string BookName { get; set; }
+
         public int Quantity { get; set; }
 
         public decimal UnitPrice { get; set; }
