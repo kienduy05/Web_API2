@@ -1,0 +1,200 @@
+﻿@model List<QuanLyBanSach.Models.Publisher>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Nhà xuất bản</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAdd">
+        <i data-feather="plus"></i> Thêm nhà xuất bản
+    </button>
+</div>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="Nhập từ khóa..."
+               value="@ViewBag.Keyword" />
+    </div>
+    <div class="col-md-3">
+        <select name="type" class="form-control">
+            <option value="">-- Chọn kiểu tìm --</option>
+            <option value="name" selected="@(ViewBag.Type == "name")">Tên</option>
+            <option value="address" selected="@(ViewBag.Type == "address")">Địa chỉ</option>
+            <option value="phone" selected="@(ViewBag.Type == "phone")">SĐT</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">
+            <i data-feather="search"></i> Tìm
+        </button>
+    </div>
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên nhà xuất bản</th>
+                    <th>Địa chỉ</th>
+                    <th>Điện thoại</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.PublisherID</td>
+                        <td>@item.PublisherName</td>
+                        <td>@item.PublisherAddress</td>
+                        <td>@item.PublisherPhone</td>
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-sm"
+                                    onclick="openEdit(@item.PublisherID, '@item.PublisherName', '@item.PublisherAddress', '@item.PublisherPhone')">
+                                <i data-feather="edit"></i>
+                            </button>
+                            <a asp-area="Admin"
+                                   asp-controller="Publisher"
+                                   asp-action="Delete"
+                                   asp-route-id="@item.PublisherID"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Bạn có chắc muốn xóa không?')">
+                                <i data-feather="trash-2"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<nav>
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-type="@ViewBag.Type">
+                Previous
+            </a>
+        </li>
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-keyword="@ViewBag.Keyword"
+                       asp-route-type="@ViewBag.Type">
+                    @i
+                </a>
+            </li>
+        }
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-type="@ViewBag.Type">
+                Next
+            </a>
+        </li>
+    </ul>
+</nav>
+<!-- Modal Thêm -->
+<div class="modal fade" id="modalAdd" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-area="Admin" asp-controller="Publisher" asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm nhà xuất bản mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tên nhà xuất bản</label>
+                        <input name="PublisherName" class="form-control"
+                               placeholder="VD: NXB Trẻ..." required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input name="PublisherAddress" class="form-control"
+                               placeholder="VD: Hồ Chí Minh..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Điện thoại</label>
+                        <input name="PublisherPhone" class="form-control"
+                               placeholder="VD: 0281111111..." />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-success">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa -->
+<div class="modal fade" id="modalEdit" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-area="Admin" asp-controller="Publisher" asp-action="Edit" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật nhà xuất bản</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editId" name="PublisherID" />
+                    <div class="mb-3">
+                        <label class="form-label">Tên nhà xuất bản</label>
+                        <input id="editName" name="PublisherName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input id="editAddress" name="PublisherAddress" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Điện thoại</label>
+                        <input id="editPhone" name="PublisherPhone" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-warning">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openEdit(id, name, address, phone) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editAddress').value = address;
+            document.getElementById('editPhone').value = phone;
+            new bootstrap.Modal(document.getElementById('modalEdit')).show();
+        }
+    </script>
+}
