@@ -1,0 +1,231 @@
+@model List<QuanLyBanSach.Models.Order>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Quản lý đơn hàng</h3>
+</div>
+
+<form method="get" class="row mb-3" id="searchForm">
+    <div class="col-md-3">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="Nhập từ khóa..."
+               value="@ViewBag.Keyword" />
+    </div>
+
+    <div class="col-md-3">
+        <select name="type" class="form-control" id="searchType" required>
+            <option value="">-- Chọn kiểu tìm --</option>
+            @if (ViewBag.Type == "id")
+            {
+                <option value="id" selected>Mã đơn</option>
+            }
+            else
+            {
+                <option value="id">Mã đơn</option>
+            }
+            @if (ViewBag.Type == "customer")
+            {
+                <option value="customer" selected>Tên khách hàng</option>
+            }
+            else
+            {
+                <option value="customer">Tên khách hàng</option>
+            }
+            @if (ViewBag.Type == "phone")
+            {
+                <option value="phone" selected>SĐT</option>
+            }
+            else
+            {
+                <option value="phone">SĐT</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary" onclick="return validateSearch()">
+            <i data-feather="search"></i> Tìm
+        </button>
+    </div>
+
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<script>
+    function validateSearch() {
+        var keyword = document.querySelector('input[name="keyword"]').value.trim();
+        var type = document.getElementById('searchType').value;
+
+        if (!keyword) {
+            alert('Vui lòng nhập từ khóa tìm kiếm!');
+            return false;
+        }
+
+        if (!type) {
+            alert('Vui lòng chọn kiểu tìm!');
+            return false;
+        }
+
+        return true;
+    }
+</script>
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="btn-group" role="group">
+            <a asp-action="Index" 
+               class="btn @(ViewBag.Status == null ? "btn-primary" : "btn-outline-primary")">
+                <i data-feather="list"></i> Tất cả
+            </a>
+            <a asp-action="Index" asp-route-status="0"
+               class="btn @(ViewBag.Status == 0 ? "btn-warning" : "btn-outline-warning")">
+                <i data-feather="clock"></i> Đang chuẩn bị
+            </a>
+            <a asp-action="Index" asp-route-status="1"
+               class="btn @(ViewBag.Status == 1 ? "btn-info" : "btn-outline-info")">
+                <i data-feather="truck"></i> Đang giao
+            </a>
+            <a asp-action="Index" asp-route-status="2"
+               class="btn @(ViewBag.Status == 2 ? "btn-success" : "btn-outline-success")">
+                <i data-feather="check-circle"></i> Đã giao
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        @if (Model.Count > 0)
+        {
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Mã khách</th>
+                        <th>Ngày tạo</th>
+                        <th>Người nhận</th>
+                        <th>SĐT nhận</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var statusBadge = item.OrderStatus switch
+                        {
+                            0 => "warning",
+                            1 => "info",
+                            2 => "success",
+                            _ => "secondary"
+                        };
+
+                        var statusText = item.OrderStatus switch
+                        {
+                            0 => "Đang chuẩn bị",
+                            1 => "Đang giao",
+                            2 => "Đã giao",
+                            _ => "Không xác định"
+                        };
+
+                        <tr>
+                            <td><strong>#@item.OrderID</strong></td>
+                            <td>@item.CustomerID</td>
+                            <td>@item.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.ReceiverName</td>
+                            <td>@item.ReceiverPhone</td>
+                            <td>@item.OrderTotalAmount.ToString("C")</td>
+                            <td>
+                                <span class="badge bg-@statusBadge">@statusText</span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-area="Admin"
+                                   asp-controller="Order"
+                                   asp-action="Details"
+                                   asp-route-id="@item.OrderID"
+                                   class="btn btn-info btn-sm"
+                                   title="Xem chi tiết">
+                                    <i data-feather="eye"></i>
+                                </a>
+
+                                <a asp-area="Admin"
+                                   asp-controller="Order"
+                                   asp-action="EditStatus"
+                                   asp-route-id="@item.OrderID"
+                                   class="btn btn-warning btn-sm"
+                                   title="Cập nhật trạng thái">
+                                    <i data-feather="edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    @if (ViewBag.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(ViewBag.CurrentPage - 1)"
+                               asp-route-keyword="@ViewBag.Keyword"
+                               asp-route-type="@ViewBag.Type"
+                               asp-route-status="@ViewBag.Status">Previous</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    }
+
+                    <li class="page-item active">
+                        <span class="page-link">@ViewBag.CurrentPage</span>
+                    </li>
+
+                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(ViewBag.CurrentPage + 1)"
+                               asp-route-keyword="@ViewBag.Keyword"
+                               asp-route-type="@ViewBag.Type"
+                               asp-route-status="@ViewBag.Status">Next</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                Không có đơn hàng nào.
+            </div>
+        }
+    </div>
+</div>
