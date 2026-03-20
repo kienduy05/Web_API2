@@ -73,7 +73,11 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
                 TempData["Error"] = "Tên nhà xuất bản không được để trống";
                 return RedirectToAction("Index");
             }
-
+            if (!string.IsNullOrEmpty(model.PublisherPhone) && model.PublisherPhone.Length != 10)
+            {
+                TempData["Error"] = "Số điện thoại phải đúng 10 chữ số";
+                return RedirectToAction("Index");
+            }
             var result = await publisherAPI.Update(model);
 
             if (result)
