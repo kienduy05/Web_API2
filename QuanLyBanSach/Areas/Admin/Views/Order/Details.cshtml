@@ -1,0 +1,133 @@
+@model QuanLyBanSach.Models.Order
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var orderDetails = ViewBag.OrderDetails as List<QuanLyBanSach.Models.OrderDetail>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Chi tiết đơn hàng #@Model.OrderID</h3>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i data-feather="arrow-left"></i> Quay lại
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">Thông tin đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Mã đơn hàng:</strong> #@Model.OrderID</p>
+                        <p><strong>Mã khách hàng:</strong> @Model.CustomerID</p>
+                        <p><strong>Ngày tạo:</strong> @Model.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Tổng tiền:</strong> <span class="text-danger">@Model.OrderTotalAmount.ToString("C")</span></p>
+                        <p><strong>Trạng thái:</strong> 
+                            @{
+                                var statusBadge = Model.OrderStatus switch
+                                {
+                                    0 => "warning",
+                                    1 => "info",
+                                    2 => "success",
+                                    _ => "secondary"
+                                };
+                            }
+                            <span class="badge bg-@statusBadge">@ViewBag.StatusText</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">Thông tin người nhận</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Tên người nhận:</strong> @Model.ReceiverName</p>
+                <p><strong>Số điện thoại:</strong> @Model.ReceiverPhone</p>
+                <p><strong>Địa chỉ:</strong> @Model.ReceiverAddress</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">Chi tiết sản phẩm</h5>
+            </div>
+            <div class="card-body">
+                @if (orderDetails != null && orderDetails.Count > 0)
+                {
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã sách</th>
+                                <th>Số lượng</th>
+                                <th>Giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in orderDetails)
+                            {
+                                decimal totalPrice = detail.Quantity * detail.UnitPrice;
+                                <tr>
+                                    <td>#@detail.BookID</td>
+                                    <td>@detail.Quantity</td>
+                                    <td>@detail.UnitPrice.ToString("C")</td>
+                                    <td class="text-end">@totalPrice.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="alert alert-info">Không có sản phẩm trong đơn hàng này.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">Cập nhật trạng thái</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p><strong>Trạng thái hiện tại:</strong></p>
+                    @{
+                        var currentStatusBadge = Model.OrderStatus switch
+                        {
+                            0 => "warning",
+                            1 => "info",
+                            2 => "success",
+                            _ => "secondary"
+                        };
+                    }
+                    <span class="badge bg-@currentStatusBadge" style="font-size: 0.9rem;">@ViewBag.StatusText</span>
+                </div>
+
+                <a asp-action="EditStatus" 
+                   asp-route-id="@Model.OrderID"
+                   class="btn btn-primary btn-sm w-100">
+                    <i data-feather="edit-2"></i> Cập nhật trạng thái
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

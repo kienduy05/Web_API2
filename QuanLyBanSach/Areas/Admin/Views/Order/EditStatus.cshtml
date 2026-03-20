@@ -1,0 +1,139 @@
+@model QuanLyBanSach.Models.Order
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Cập nhật trạng thái đơn hàng #@Model.OrderID</h3>
+    <a asp-action="Details" asp-route-id="@Model.OrderID" class="btn btn-secondary">
+        <i data-feather="arrow-left"></i> Quay lại
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">Thông tin đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Mã đơn hàng:</strong> #@Model.OrderID</p>
+                        <p><strong>Mã khách hàng:</strong> @Model.CustomerID</p>
+                        <p><strong>Ngày tạo:</strong> @Model.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Người nhận:</strong> @Model.ReceiverName</p>
+                        <p><strong>SĐT nhận:</strong> @Model.ReceiverPhone</p>
+                        <p><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">@Model.OrderTotalAmount.ToString("C")</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">Cập nhật trạng thái</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var currentStatusText = Model.OrderStatus switch
+                    {
+                        0 => "Đang chuẩn bị",
+                        1 => "Đang giao",
+                        2 => "Đã giao",
+                        _ => "Không xác định"
+                    };
+
+                    var currentStatusBadge = Model.OrderStatus switch
+                    {
+                        0 => "warning",
+                        1 => "info",
+                        2 => "success",
+                        _ => "secondary"
+                    };
+                }
+
+                <div class="mb-4">
+                    <label class="form-label"><strong>Trạng thái hiện tại:</strong></label>
+                    <p>
+                        <span class="badge bg-@currentStatusBadge" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            @currentStatusText
+                        </span>
+                    </p>
+                </div>
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label"><strong>Chọn trạng thái mới:</strong></label>
+                        <select id="newStatus" name="newStatus" class="form-select" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            @if (Model.OrderStatus == 0)
+                            {
+                                <option value="0" selected>Đang chuẩn bị</option>
+                            }
+                            else
+                            {
+                                <option value="0">Đang chuẩn bị</option>
+                            }
+                            @if (Model.OrderStatus == 1)
+                            {
+                                <option value="1" selected>Đang giao</option>
+                            }
+                            else
+                            {
+                                <option value="1">Đang giao</option>
+                            }
+                            @if (Model.OrderStatus == 2)
+                            {
+                                <option value="2" selected>Đã giao</option>
+                            }
+                            else
+                            {
+                                <option value="2">Đã giao</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Mô tả các trạng thái:</strong></label>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="badge bg-warning">0 - Đang chuẩn bị</span>
+                                <p class="mb-0">Đơn hàng vừa được tạo, đang trong quá trình chuẩn bị hàng</p>
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge bg-info">1 - Đang giao</span>
+                                <p class="mb-0">Đơn hàng đã sẵn sàng và đang trong quá trình vận chuyển</p>
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge bg-success">2 - Đã giao</span>
+                                <p class="mb-0">Đơn hàng đã được giao thành công cho khách hàng</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Details" asp-route-id="@Model.OrderID" class="btn btn-secondary">
+                            <i data-feather="x"></i> Hủy
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save"></i> Cập nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
