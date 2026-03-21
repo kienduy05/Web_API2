@@ -4,6 +4,7 @@ from flask_cors import CORS
 from routes.api_bookcategory import category_bp
 from routes.api_customer import customer_bp
 from routes.api_account import account_bp
+from routes.api_dashboard import dashboard_bp
 from routes.api_publisher import publisher_bp
 from routes.api_orders import orders_bp
 from routes.api_orderdetail import orderdetail_bp
@@ -20,6 +21,7 @@ app.register_blueprint(orders_bp)
 app.register_blueprint(orderdetail_bp)
 app.register_blueprint(author_bp)
 app.register_blueprint(book_bp)
+app.register_blueprint(dashboard_bp)
 @app.route('/')
 def home():
     return {"mess": "Flask API BTL_API dang chay"}
