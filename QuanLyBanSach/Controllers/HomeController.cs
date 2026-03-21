@@ -1,14 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using QuanLyBanSach.Models;
+using QuanLyBanSach.Models.ViewModels;
+using QuanLyBanSach.Services;
 using System.Diagnostics;
 
 namespace QuanLyBanSach.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        BookAPI _bookAPI = new BookAPI();
+
+        
+
+        public async Task<IActionResult> Index()
         {
-            return View();
+            HomeIndexViewModel viewModel = new HomeIndexViewModel
+            {
+                MainBooks = await _bookAPI.GetAll(),
+                FeaturedBook = await _bookAPI.GetById(1)
+            };
+
+            return View(viewModel);
         }
 
         public IActionResult Privacy()

@@ -1,17 +1,127 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-    
-*@
+﻿@using Newtonsoft.Json
+@model QuanLyBanSach.Models.ViewModels.DashboardFullViewModel
 @{
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["Error"]
-    </div>
-}
-<h1>View cua trang chu -da sua Nhat </h1>
-<h1>View cua trang chu -da sua Kien </h1>
-<h1>Duc dz</h1>
 
+<h2 class="mb-4">📊 Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <h6>Doanh thu</h6>
+                <h3>@Model.Summary.TotalRevenue.ToString("N0") VNĐ</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <h6>Đơn hàng</h6>
+                <h3>@Model.Summary.TotalOrders</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-warning text-white shadow">
+            <div class="card-body">
+                <h6>Khách hàng</h6>
+                <h3>@Model.Summary.TotalCustomers</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow">
+            <div class="card-body">
+                <h6>Sách</h6>
+                <h3>@Model.Summary.TotalBooks</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHART -->
+<div class="card mb-4 shadow">
+    <div class="card-body">
+        <h5>📈 Doanh thu theo tháng</h5>
+        <canvas id="chart"></canvas>
+    </div>
+</div>
+
+<!-- TOP BOOK + ORDER -->
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5>🔥 Top sách</h5>
+                <ul class="list-group">
+                    @foreach (var b in Model.TopBooks)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            @b.BookName
+                            <span>@b.TotalSold</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5>🧾 Đơn gần đây</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Khách</th>
+                            <th>Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Model.RecentOrders)
+                        {
+                            <tr>
+                                <td>@o.OrderID</td>
+                                <td>@o.ReceiverName</td>
+                                <td>@o.Total.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    var data = @Html.Raw(JsonConvert.SerializeObject(Model.RevenueByMonth));
+
+    console.log(data); // debug
+
+    var labels = data.map(x => "Tháng " + x.Month);
+    var values = data.map(x => x.Revenue);
+
+    new Chart(document.getElementById("chart"), {
+    type: 'line',
+    data: {
+    labels: labels,
+    datasets: [{
+    label: 'Doanh thu',
+    data: values,
+    fill: false,
+    tension: 0.3
+    }]
+    }
+    });
+</script>

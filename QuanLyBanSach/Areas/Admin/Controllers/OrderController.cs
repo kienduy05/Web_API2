@@ -13,21 +13,6 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
     {
         OrderAPI orderAPI = new OrderAPI();
 
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var role = HttpContext.Session.GetString("AccountType");
-
-            // Chỉ admin được truy cập
-            if (role != "0")
-            {
-                TempData["Error"] = "Bạn không có quyền truy cập chức năng này!";
-                context.Result = RedirectToAction("Index", "Home");
-                return;
-            }
-
-            base.OnActionExecuting(context);
-        }
-
         public async Task<IActionResult> Index(string keyword, string type, int? status, int? month, int? year, int page = 1)
         {
             int pageSize = 6;
