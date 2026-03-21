@@ -75,8 +75,9 @@
                     <table class="table table-sm table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>Tên sách</th>
+                                
                                 <th>Mã sách</th>
+                                <th>Tên sách</th>
                                 <th>Số lượng</th>
                                 <th>Giá</th>
                                 <th class="text-end">Thành tiền</th>
@@ -87,8 +88,9 @@
                             {
                                 decimal totalPrice = detail.Quantity * detail.UnitPrice;
                                 <tr>
-                                    <td>@detail.BookName</td>
                                     <td>#@detail.BookID</td>
+                                    <td>@detail.BookName</td>
+                                    
                                     <td>@detail.Quantity</td>
                                     <td>@detail.UnitPrice.ToString("C")</td>
                                     <td class="text-end">@totalPrice.ToString("C")</td>
