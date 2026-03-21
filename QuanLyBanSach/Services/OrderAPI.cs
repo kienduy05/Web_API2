@@ -175,5 +175,28 @@ namespace QuanLyBanSach.Services
                 return new List<Order>();
             }
         }
+
+        // SEARCH BY MONTH/YEAR
+        public async Task<List<Order>> SearchByMonthYear(int month, int year)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{baseUrl}/searchbymonthyear?month={month}&year={year}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<Order>();
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<List<Order>>(json) ?? new List<Order>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SearchByMonthYear Error: {ex.Message}");
+                return new List<Order>();
+            }
+        }
     }
 }

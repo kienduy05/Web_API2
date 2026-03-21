@@ -135,7 +135,8 @@ CREATE TABLE Orders(
 INSERT INTO Orders VALUES
 (1,GETDATE(),N'Nguyễn Văn A','0901111111',N'Hà Nội',180000,0),
 (2,GETDATE(),N'Trần Thị B','0902222222',N'Hồ Chí Minh',250000,1),
-(1,GETDATE(),N'Nguyễn Văn A','0901111111',N'Đà Nẵng',200000,2)
+(1,GETDATE(),N'Nguyễn Văn A','0901111111',N'Đà Nẵng',200000,2),
+(3,'2025-03-20',N'Nguyễn Văn C','0901133333',N'Đà Nẵng',200000,2)
 
 
 /* =============================

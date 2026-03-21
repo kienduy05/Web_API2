@@ -52,9 +52,86 @@
     </div>
 
     <div class="col-md-2">
-        <a asp-action="Index" class="btn btn-secondary">Reset</a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i data-feather="x"></i> Reset
+        </a>
     </div>
 </form>
+
+<!-- Form tìm kiếm theo tháng/năm -->
+<form method="get" class="row mb-3" id="monthYearForm">
+    <div class="col-md-2">
+        <input type="number" 
+               name="month" 
+               class="form-control" 
+               placeholder="Tháng (1-12)"
+               min="1"
+               max="12"
+               value="@ViewBag.Month"
+               id="monthInput" />
+    </div>
+
+    <div class="col-md-2">
+        <input type="number" 
+               name="year" 
+               class="form-control" 
+               placeholder="Năm (VD: 2024)"
+               min="2000"
+               max="9999"
+               value="@ViewBag.Year"
+               id="yearInput" />
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-info" onclick="return validateMonthYear()">
+            <i data-feather="calendar"></i> Tìm theo tháng/năm
+        </button>
+    </div>
+</form>
+
+<script>
+    function validateMonthYear() {
+        var month = document.getElementById('monthInput').value.trim();
+        var year = document.getElementById('yearInput').value.trim();
+
+        var currentDate = new Date();
+        var currentMonth = currentDate.getMonth() + 1;
+        var currentYear = currentDate.getFullYear();
+
+        // Nếu cả tháng và năm đều để trống, cho phép submit (không filter)
+        if (!month && !year) {
+            return true;
+        }
+
+        // Nếu chỉ nhập một trong hai, yêu cầu nhập cả hai
+        if ((month && !year) || (!month && year)) {
+            alert('Vui lòng nhập cả tháng và năm!');
+            return false;
+        }
+
+        // Validate tháng
+        month = parseInt(month);
+        if (isNaN(month) || month < 1 || month > 12) {
+            alert('Tháng phải từ 1 đến 12!');
+            return false;
+        }
+
+        // Validate năm
+        year = parseInt(year);
+        if (isNaN(year) || year < 2000 || year > currentYear) {
+            alert('Năm phải từ 2000 đến ' + currentYear + '!');
+            return false;
+        }
+
+        // Check nếu năm bằng năm hiện tại, tháng không được vượt quá tháng hiện tại
+        if (year === currentYear && month > currentMonth) {
+            alert('Tháng không được vượt quá tháng hiện tại (' + currentMonth + ')!');
+            return false;
+        }
+
+        return true;
+    }
+</script>
 
 <script>
     function validateSearch() {
@@ -188,7 +265,9 @@
                                asp-route-page="@(ViewBag.CurrentPage - 1)"
                                asp-route-keyword="@ViewBag.Keyword"
                                asp-route-type="@ViewBag.Type"
-                               asp-route-status="@ViewBag.Status">Previous</a>
+                               asp-route-status="@ViewBag.Status"
+                               asp-route-month="@ViewBag.Month"
+                               asp-route-year="@ViewBag.Year">Previous</a>
                         </li>
                     }
                     else
@@ -198,9 +277,75 @@
                         </li>
                     }
 
-                    <li class="page-item active">
-                        <span class="page-link">@ViewBag.CurrentPage</span>
-                    </li>
+                    @{
+                        int totalPages = ViewBag.TotalPages;
+                        int currentPage = ViewBag.CurrentPage;
+                        int startPage = Math.Max(1, currentPage - 2);
+                        int endPage = Math.Min(totalPages, currentPage + 2);
+
+                        // Nếu còn trang trước startPage, hiển thị trang 1 và "..."
+                        if (startPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="1"
+                                   asp-route-keyword="@ViewBag.Keyword"
+                                   asp-route-type="@ViewBag.Type"
+                                   asp-route-status="@ViewBag.Status"
+                                   asp-route-month="@ViewBag.Month"
+                                   asp-route-year="@ViewBag.Year">1</a>
+                            </li>
+                            if (startPage > 2)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                        }
+
+                        // Hiển thị số trang từ startPage đến endPage
+                        for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i == currentPage)
+                            {
+                                <li class="page-item active">
+                                    <span class="page-link">@i</span>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@i"
+                                       asp-route-keyword="@ViewBag.Keyword"
+                                       asp-route-type="@ViewBag.Type"
+                                       asp-route-status="@ViewBag.Status"
+                                       asp-route-month="@ViewBag.Month"
+                                       asp-route-year="@ViewBag.Year">@i</a>
+                                </li>
+                            }
+                        }
+
+                        // Nếu còn trang sau endPage, hiển thị "..." và trang cuối
+                        if (endPage < totalPages)
+                        {
+                            if (endPage < totalPages - 1)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@totalPages"
+                                   asp-route-keyword="@ViewBag.Keyword"
+                                   asp-route-type="@ViewBag.Type"
+                                   asp-route-status="@ViewBag.Status"
+                                   asp-route-month="@ViewBag.Month"
+                                   asp-route-year="@ViewBag.Year">@totalPages</a>
+                            </li>
+                        }
+                    }
 
                     @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                     {
@@ -209,7 +354,9 @@
                                asp-route-page="@(ViewBag.CurrentPage + 1)"
                                asp-route-keyword="@ViewBag.Keyword"
                                asp-route-type="@ViewBag.Type"
-                               asp-route-status="@ViewBag.Status">Next</a>
+                               asp-route-status="@ViewBag.Status"
+                               asp-route-month="@ViewBag.Month"
+                               asp-route-year="@ViewBag.Year">Next</a>
                         </li>
                     }
                     else

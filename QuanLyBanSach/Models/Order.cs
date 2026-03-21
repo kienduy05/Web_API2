@@ -6,6 +6,8 @@
 
         public int CustomerID { get; set; }
 
+        public string CustomerName { get; set; }
+
         public DateTime OrderCreatedDate { get; set; }
 
         public string ReceiverName { get; set; }

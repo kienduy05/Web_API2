@@ -12,9 +12,10 @@ def get_all_orders():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                   ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-            FROM Orders
+            SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                   o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+            FROM Orders o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
         """)
 
         keys = [col[0] for col in cursor.description]
@@ -37,10 +38,11 @@ def get_orders_by_id(id):
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                   ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-            FROM Orders
-            WHERE OrderID = ?
+            SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                   o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+            FROM Orders o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            WHERE o.OrderID = ?
         """, (id,))
 
         keys = [col[0] for col in cursor.description]
@@ -63,10 +65,11 @@ def get_orders_by_customer_id(customer_id):
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                   ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-            FROM Orders
-            WHERE CustomerID = ?
+            SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                   o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+            FROM Orders o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            WHERE o.CustomerID = ?
         """, (customer_id,))
 
         keys = [col[0] for col in cursor.description]
@@ -93,29 +96,66 @@ def search_orders():
 
         if search_type == 'id':
             cursor.execute("""
-                SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                       ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-                FROM Orders
-                WHERE OrderID LIKE ?
+                SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                       o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+                FROM Orders o
+                LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+                WHERE o.OrderID LIKE ?
             """, (f'%{keyword}%',))
         elif search_type == 'customer':
             cursor.execute("""
-                SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                       ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-                FROM Orders
-                WHERE ReceiverName LIKE ?
+                SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                       o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+                FROM Orders o
+                LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+                WHERE c.CustomerName LIKE ?
             """, (f'%{keyword}%',))
         elif search_type == 'phone':
             cursor.execute("""
-                SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                       ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-                FROM Orders
-                WHERE ReceiverPhone LIKE ?
+                SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                       o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+                FROM Orders o
+                LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+                WHERE o.ReceiverPhone LIKE ?
             """, (f'%{keyword}%',))
         else:
             cursor.close()
             conn.close()
             return flask.jsonify([])
+
+        keys = [col[0] for col in cursor.description]
+        results = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return flask.jsonify(results)
+
+    except Exception as e:
+        return flask.jsonify({"mess": str(e)}), 500
+
+
+# SEARCH BY MONTH/YEAR (NEW)
+@orders_bp.route('/orders/searchbymonthyear', methods=['GET'])
+def search_by_month_year():
+    try:
+        month = flask.request.args.get('month', '')
+        year = flask.request.args.get('year', '')
+
+        if not month or not year:
+            return flask.jsonify({"mess": "Vui lòng cung cấp tháng và năm"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                   o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+            FROM Orders o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            WHERE MONTH(o.OrderCreatedDate) = ? AND YEAR(o.OrderCreatedDate) = ?
+            ORDER BY o.OrderCreatedDate DESC
+        """, (month, year))
 
         keys = [col[0] for col in cursor.description]
         results = [dict(zip(keys, row)) for row in cursor.fetchall()]
@@ -137,10 +177,11 @@ def filter_by_status(status):
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT OrderID, CustomerID, OrderCreatedDate, ReceiverName, 
-                   ReceiverPhone, ReceiverAddress, OrderTotalAmount, OrderStatus
-            FROM Orders
-            WHERE OrderStatus = ?
+            SELECT o.OrderID, o.CustomerID, c.CustomerName, o.OrderCreatedDate, o.ReceiverName, 
+                   o.ReceiverPhone, o.ReceiverAddress, o.OrderTotalAmount, o.OrderStatus
+            FROM Orders o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            WHERE o.OrderStatus = ?
         """, (status,))
 
         keys = [col[0] for col in cursor.description]
