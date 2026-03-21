@@ -28,7 +28,7 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
             base.OnActionExecuting(context);
         }
 
-        public async Task<IActionResult> Index(string keyword, string type, int? status, int page = 1)
+        public async Task<IActionResult> Index(string keyword, string type, int? status, int? month, int? year, int page = 1)
         {
             int pageSize = 6;
 
@@ -36,8 +36,13 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
 
             try
             {
+                // Search by month/year
+                if (month.HasValue && year.HasValue)
+                {
+                    data = await orderAPI.SearchByMonthYear(month.Value, year.Value);
+                }
                 // Filter by status
-                if (status.HasValue)
+                else if (status.HasValue)
                 {
                     data = await orderAPI.FilterByStatus(status.Value);
                 }
@@ -70,6 +75,8 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
             ViewBag.Keyword = keyword;
             ViewBag.Type = type;
             ViewBag.Status = status;
+            ViewBag.Month = month;
+            ViewBag.Year = year;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
 
