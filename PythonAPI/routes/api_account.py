@@ -325,3 +325,68 @@ def register():
 
     except Exception as e:
         return flask.jsonify({"success": False, "mess": str(e)}), 500
+
+@account_bp.route('/account/change-password/<id>', methods=['PUT'])
+def change_password(id):
+    try:
+        data = flask.request.json
+
+        old_password = data.get("OldPassword")
+        new_password = data.get("NewPassword")
+
+        # ✅ validate null
+        if not old_password or not new_password:
+            return flask.jsonify({
+                "success": False,
+                "mess": "Vui lòng nhập đầy đủ thông tin"
+            }), 400
+
+        # ✅ validate >= 6 ký tự
+        if len(new_password) < 6:
+            return flask.jsonify({
+                "success": False,
+                "mess": "Mật khẩu phải có ít nhất 6 ký tự"
+            }), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # check account tồn tại
+        cursor.execute("SELECT Password FROM Account WHERE AccountID=?", (id,))
+        row = cursor.fetchone()
+
+        if not row:
+            return flask.jsonify({
+                "success": False,
+                "mess": "Tài khoản không tồn tại"
+            }), 404
+
+        # check password cũ
+        if row[0] != old_password:
+            return flask.jsonify({
+                "success": False,
+                "mess": "Mật khẩu cũ không đúng"
+            }), 400
+
+        # update password
+        cursor.execute("""
+            UPDATE Account
+            SET Password=?
+            WHERE AccountID=?
+        """, (new_password, id))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return flask.jsonify({
+            "success": True,
+            "mess": "Đổi mật khẩu thành công"
+        })
+
+    except Exception as e:
+        return flask.jsonify({
+            "success": False,
+            "mess": str(e)
+        }), 500

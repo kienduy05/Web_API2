@@ -1,0 +1,73 @@
+﻿@model QuanLyBanSach.Models.ViewModels.UserDashboardVM
+@{
+    Layout = "~/Views/Shared/_LayoutBook.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="container mt-4">
+    <h3>👤 Thông tin cá nhân</h3>
+    <p><b>Tên:</b> @Model.Customer.CustomerName</p>
+    <p><b>Email:</b> @Model.Customer.CustomerEmail</p>
+    <p><b>Phone:</b> @Model.Customer.CustomerPhone</p>
+    <p><b>Địa chỉ:</b> @Model.Customer.CustomerAddress</p>
+
+    <a asp-action="Edit" class="btn btn-warning mb-3">✏️ Chỉnh sửa thông tin</a>
+    <a asp-action="ChangePassword" class="btn btn-danger mb-2">🔐 Đổi mật khẩu</a>
+
+    <hr />
+
+    <h4>💰 Tổng chi tiêu: <span class="text-danger">@Model.TotalSpent.ToString("N0") đ</span></h4>
+
+    <hr />
+
+    <h3>📦 Đơn hàng của bạn</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ngày</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Orders)
+            {
+                <tr>
+                    <td>@item.OrderID</td>
+                    <td>@item.OrderCreatedDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.OrderTotalAmount.ToString("N0") đ</td>
+                    <td>
+                        @switch (item.OrderStatus)
+                        {
+                            case 0:
+                                <span class="badge bg-warning">Đang chuẩn bị</span>
+                                break;
+                            case 1:
+                                <span class="badge bg-info">Đang giao</span>
+                                break;
+                            case 2:
+                                <span class="badge bg-success">Đã giao</span>
+                                break;
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="OrderDetail" asp-route-id="@item.OrderID" class="btn btn-sm btn-primary">
+                            Xem chi tiết
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

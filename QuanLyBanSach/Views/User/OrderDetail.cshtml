@@ -1,0 +1,76 @@
+﻿@model QuanLyBanSach.Models.ViewModels.OrderDetailFullVM
+@{
+    Layout = "~/Views/Shared/_LayoutBook.cshtml";
+}
+
+<div class="container mt-4">
+
+    <h3>📦 Đơn hàng #@Model.Order.OrderID</h3>
+
+    <!-- INFO -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            Thông tin nhận hàng
+        </div>
+        <div class="card-body">
+            <p><b>Người nhận:</b> @Model.Order.ReceiverName</p>
+            <p><b>SĐT:</b> @Model.Order.ReceiverPhone</p>
+            <p><b>Địa chỉ:</b> @Model.Order.ReceiverAddress</p>
+            <p><b>Ngày:</b> @Model.Order.OrderCreatedDate.ToString("dd/MM/yyyy")</p>
+
+            <p>
+                <b>Trạng thái:</b>
+                @switch (Model.Order.OrderStatus)
+                {
+                    case 0:
+                        <span class="badge bg-warning">Đang chuẩn bị</span>
+                        break;
+                    case 1:
+                        <span class="badge bg-info">Đang giao</span>
+                        break;
+                    case 2:
+                        <span class="badge bg-success">Đã giao</span>
+                        break;
+                }
+            </p>
+        </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Sách</th>
+                <th>SL</th>
+                <th>Giá</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @{
+                decimal total = 0;
+            }
+
+            @foreach (var item in Model.Details)
+            {
+                var sub = item.Quantity * item.UnitPrice;
+                total += sub;
+
+                <tr>
+                    <td>@item.BookName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice.ToString("N0") đ</td>
+                    <td>@sub.ToString("N0") đ</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-end">
+        <h4 class="text-danger">Tổng: @total.ToString("N0") đ</h4>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary mt-3">⬅ Quay lại</a>
+
+</div>

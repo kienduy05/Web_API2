@@ -1,66 +1,51 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using QuanLyBanSach.Models.ViewModels;
 using QuanLyBanSach.Services;
-using QuanLyBanSach.Models;
-using QuanLyBanSach.Models.Authentication;
 
-namespace QuanLyBanSach.Areas.Admin.Controllers
+[Area("Admin")]
+public class ChangePasswordController : Controller
 {
-    [Area("Admin")]
-    [Authentication]
-    public class ChangePasswordController : Controller
+    private AccountAPI accountAPI = new AccountAPI();
+
+    // GET
+    public IActionResult Index()
     {
-        AccountAPI accountAPI = new AccountAPI();
+        return View(new AdminChangePasswordVM());
+    }
 
-        // GET
-        public async Task<IActionResult> Index()
+    // POST
+    [HttpPost]
+    public async Task<IActionResult> Index(AdminChangePasswordVM model)
+    {
+        var accountId = HttpContext.Session.GetInt32("AccountID");
+
+        if (accountId == null)
+            return RedirectToAction("Login", "Access");
+
+        // ✅ validate model
+        if (!ModelState.IsValid)
+            return View(model);
+
+        if (model.NewPassword != model.ConfirmPassword)
         {
-            var accountId = HttpContext.Session.GetInt32("AccountID");
-
-            if (accountId == null)
-                return RedirectToAction("Login", "Access");
-
-            var accounts = await accountAPI.GetAll();
-
-            var account = accounts.FirstOrDefault(x => x.AccountID == accountId);
-
-            return View(account);
-        }
-
-        // POST
-        [HttpPost]
-        public async Task<IActionResult> Index(Account model, string ConfirmPassword)
-        {
-            var accountId = HttpContext.Session.GetInt32("AccountID");
-
-            if (accountId == null)
-                return RedirectToAction("Login", "Access");
-
-            if (model.Password != ConfirmPassword)
-            {
-                TempData["Error"] = "Mật khẩu xác nhận không khớp";
-                return View(model);
-            }
-
-            var accounts = await accountAPI.GetAll();
-            var oldAccount = accounts.FirstOrDefault(x => x.AccountID == accountId);
-
-            oldAccount.Password = model.Password;
-            oldAccount.AccountDisplayName = model.AccountDisplayName;
-
-            var result = await accountAPI.Update(oldAccount);
-
-            if (result)
-            {
-                TempData["Success"] = "Đổi mật khẩu thành công";
-
-                // cập nhật lại session tên
-                HttpContext.Session.SetString("AccountDisplayName", oldAccount.AccountDisplayName);
-
-                return RedirectToAction("Index");
-            }
-
-            TempData["Error"] = "Cập nhật thất bại";
+            TempData["Error"] = "Mật khẩu xác nhận không khớp";
             return View(model);
         }
+
+        var result = await accountAPI.ChangePassword(
+            accountId.Value,
+            model.OldPassword,
+            model.NewPassword
+        );
+
+        if (!result.success)
+        {
+            TempData["Error"] = result.message;
+            return View(model);
+        }
+
+        TempData["Success"] = result.message;
+
+        return RedirectToAction("Index");
     }
 }

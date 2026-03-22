@@ -132,5 +132,26 @@ namespace QuanLyBanSach.Services
 
             return (data.success, data.mess.ToString());
         }
+
+        public async Task<(bool success, string message)> ChangePassword(int accountId, string oldPass, string newPass)
+        {
+            var data = new
+            {
+                OldPassword = oldPass,
+                NewPassword = newPass
+            };
+
+            var json = JsonConvert.SerializeObject(data);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var res = await _httpClient.PutAsync($"{baseUrl}/change-password/{accountId}", content);
+
+            var result = await res.Content.ReadAsStringAsync();
+
+            dynamic obj = JsonConvert.DeserializeObject(result);
+
+            return (obj.success, obj.mess.ToString());
+        }
     }
 }
