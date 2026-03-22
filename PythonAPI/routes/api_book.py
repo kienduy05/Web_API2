@@ -166,3 +166,47 @@ def search_book():
 
     except Exception as e:
         return flask.jsonify({"mess": str(e)}), 500
+@book_bp.route('/book/getall-with-meta', methods=['GET'])
+def get_all_book_with_meta():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Lấy sách kèm JOIN
+        cursor.execute("""
+            SELECT b.*, c.BookCategoryName, a.AuthorName, p.PublisherName
+            FROM Book b
+            LEFT JOIN BookCategory c ON b.BookCategoryID = c.BookCategoryID
+            LEFT JOIN Author a ON b.BookAuthorID = a.AuthorID
+            LEFT JOIN Publisher p ON b.BookPublisherID = p.PublisherID
+        """)
+        keys = [col[0] for col in cursor.description]
+        books = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        # Lấy danh mục
+        cursor.execute("SELECT * FROM BookCategory")
+        keys = [col[0] for col in cursor.description]
+        categories = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        # Lấy tác giả
+        cursor.execute("SELECT * FROM Author")
+        keys = [col[0] for col in cursor.description]
+        authors = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        # Lấy nhà xuất bản
+        cursor.execute("SELECT * FROM Publisher")
+        keys = [col[0] for col in cursor.description]
+        publishers = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return flask.jsonify({
+            "books": books,
+            "categories": categories,
+            "authors": authors,
+            "publishers": publishers
+        })
+
+    except Exception as e:
+        return flask.jsonify({"mess": str(e)}), 500
