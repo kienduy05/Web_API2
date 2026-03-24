@@ -1,0 +1,134 @@
+﻿@model QuanLyBanSach.Models.Book
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Chi tiết sách";
+    Layout = "~/Views/Shared/_LayoutBook.cshtml";
+}
+
+<section class="book-details py-5 bg-light">
+    <div class="container">
+        <div class="row">
+
+            <!-- IMAGE -->
+            <div class="col-lg-5 mb-4">
+                <div class="card border-0 shadow-sm">
+
+                    @if (!string.IsNullOrEmpty(Model.BookImage))
+                    {
+                        <img src="@Url.Content($"~/images/books/{Model.BookImage}")"
+                             class="img-fluid rounded" />
+                    }
+                    else
+                    {
+                        <div style="height:300px;background:#eee;
+                            display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-image fs-1 text-muted"></i>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <!-- INFO -->
+            <div class="col-lg-7">
+
+                <!-- NAME -->
+                <h2 class="fw-bold text-danger mb-2">
+                    @Model.BookName
+                </h2>
+
+                <!-- AUTHOR -->
+                <p class="text-muted mb-1">
+                    Tác giả: <strong>@Model.AuthorName</strong>
+                </p>
+
+                <!-- CATEGORY -->
+                <p class="text-muted mb-1">
+                    Thể loại: <strong>@Model.BookCategoryName</strong>
+                </p>
+
+                <!-- PUBLISHER -->
+                <p class="text-muted mb-3">
+                    Nhà xuất bản: <strong>@Model.PublisherName</strong>
+                </p>
+
+                <!-- PRICE -->
+                <h3 class="text-danger mb-3">
+                    @Model.BookPrice.ToString("N0") ₫
+                </h3>
+
+                <!-- DESCRIPTION -->
+                <p class="text-muted mb-4">
+                    @(string.IsNullOrEmpty(Model.BookDescription)
+                        ? "Chưa có mô tả cho sách này."
+                        : Model.BookDescription)
+                </p>
+
+                <!-- QUANTITY -->
+                <p class="mb-3">
+                    <strong>Số lượng còn:</strong> @Model.BookQuantity
+                </p>
+
+                <!-- STATUS -->
+                <p class="mb-4">
+                    <strong>Trạng thái:</strong>
+                    @(Model.BookStatus == 1 ? "Còn hàng" : "Hết hàng")
+                </p>
+
+                <!-- BUTTON -->
+                <div class="d-flex gap-3">
+                    <button class="btn text-white px-4"
+                            style="background:#ED553B;"
+                        @(Model.BookStatus == 0 ? "disabled" : "")>
+                        Thêm vào giỏ hàng
+                    </button>
+
+                    <button class="btn btn-outline-secondary px-4">
+                        Yêu thích
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RELATED (demo tạm) -->
+        <div class="mt-5">
+            <h4 class="fw-bold mb-4 text-orange">Sách liên quan</h4>
+            <div class="row gy-4">
+
+                @foreach (var item in (List<QuanLyBanSach.Models.Book>)ViewBag.RelatedBooks)
+                {
+                    <div class="col-md-3">
+                        <a asp-controller="Book"
+                               asp-action="Detail"
+                               asp-route-id="@item.BookID"
+                               style="text-decoration:none">
+
+                            <div class="card border-0 shadow-sm h-100">
+
+                                @if (!string.IsNullOrEmpty(item.BookImage))
+                                {
+                                    <img src="@Url.Content($"~/images/books/{item.BookImage}")"
+                                         class="card-img-top"
+                                         style="height:200px;object-fit:cover;" />
+                                }
+
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-1">@item.BookName</h6>
+                                    <p class="text-muted small mb-1">@item.AuthorName</p>
+                                    <p class="fw-semibold text-orange mb-0">
+                                        @item.BookPrice.ToString("N0") ₫
+                                    </p>
+                                </div>
+
+                            </div>
+                        </a>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</section>

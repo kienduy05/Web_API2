@@ -25,7 +25,7 @@ namespace QuanLyBanSach.Services
             return JsonConvert.DeserializeObject<List<Book>>(json);
         }
 
-        // Dùng cho BookController admin — 1 request thay vì 4
+
         public async Task<BookMetaResponse> GetAllWithMeta()
         {
             var response = await _httpClient.GetAsync($"{baseUrl}/getall-with-meta");
@@ -34,11 +34,21 @@ namespace QuanLyBanSach.Services
         }
 
         // GET BY ID
+        static Dictionary<int, Book> cache = new();
+
         public async Task<Book> GetById(int id)
         {
+            if (cache.ContainsKey(id))
+                return cache[id];
+
             var response = await _httpClient.GetAsync($"{baseUrl}/getbyid/{id}");
             var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Book>(json);
+            var book = JsonConvert.DeserializeObject<Book>(json);
+
+            cache[id] = book;
+            
+
+            return book;
         }
 
         // ADD
@@ -48,6 +58,7 @@ namespace QuanLyBanSach.Services
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"{baseUrl}/add", content);
             return response.IsSuccessStatusCode;
+            
         }
 
         // UPDATE
@@ -56,7 +67,18 @@ namespace QuanLyBanSach.Services
             var json = JsonConvert.SerializeObject(book);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"{baseUrl}/update", content);
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+            {
+                
+                if (cache.ContainsKey(book.BookID))
+                {
+                    cache.Remove(book.BookID);
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         // DELETE
@@ -70,6 +92,29 @@ namespace QuanLyBanSach.Services
         public async Task<List<Book>> Search(string keyword)
         {
             var response = await _httpClient.GetAsync($"{baseUrl}/search?keyword={keyword}");
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Book>>(json);
+        }
+        // loc
+        public async Task<List<Book>> Filter(int? categoryId, int? authorId,
+                                     decimal? minPrice, decimal? maxPrice,
+                                     string sort)
+        {
+            var query = $"{baseUrl.Replace("/book", "")}/book/filter?";
+
+            if (categoryId.HasValue) query += $"categoryId={categoryId}&";
+            if (authorId.HasValue) query += $"authorId={authorId}&";
+            if (minPrice.HasValue) query += $"minPrice={minPrice}&";
+            if (maxPrice.HasValue) query += $"maxPrice={maxPrice}&";
+            if (!string.IsNullOrEmpty(sort)) query += $"sort={sort}";
+
+            var response = await _httpClient.GetAsync(query);
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Book>>(json);
+        }
+        public async Task<List<Book>> GetRelated(int categoryId, int bookId)
+        {
+            var response = await _httpClient.GetAsync($"{baseUrl}/related/{categoryId}/{bookId}");
             var json = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<Book>>(json);
         }
