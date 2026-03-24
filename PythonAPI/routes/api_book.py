@@ -37,7 +37,15 @@ def get_book_by_id(id):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM Book WHERE BookID = ?", (id,))
+        query = """
+                SELECT b.*, c.BookCategoryName, a.AuthorName, p.PublisherName
+                FROM Book b
+                         LEFT JOIN BookCategory c ON b.BookCategoryID = c.BookCategoryID
+                         LEFT JOIN Author a ON b.BookAuthorID = a.AuthorID
+                         LEFT JOIN Publisher p ON b.BookPublisherID = p.PublisherID
+                WHERE b.BookID = ? \
+                """
+        cursor.execute(query, (id,))
 
         keys = [col[0] for col in cursor.description]
         row = cursor.fetchone()
@@ -207,6 +215,83 @@ def get_all_book_with_meta():
             "authors": authors,
             "publishers": publishers
         })
+
+    except Exception as e:
+        return flask.jsonify({"mess": str(e)}), 500
+
+@book_bp.route('/book/filter', methods=['GET'])
+def filter_book():
+    category_id = flask.request.args.get("categoryId")
+    author_id   = flask.request.args.get("authorId")
+    min_price   = flask.request.args.get("minPrice")
+    max_price   = flask.request.args.get("maxPrice")
+    sort        = flask.request.args.get("sort", "")
+
+    query = """
+        SELECT b.*, c.BookCategoryName, a.AuthorName, p.PublisherName
+        FROM Book b
+        LEFT JOIN BookCategory c ON b.BookCategoryID = c.BookCategoryID
+        LEFT JOIN Author a ON b.BookAuthorID = a.AuthorID
+        LEFT JOIN Publisher p ON b.BookPublisherID = p.PublisherID
+        WHERE 1=1
+    """
+    params = []
+
+    if category_id:
+        query += " AND b.BookCategoryID = ?"
+        params.append(category_id)
+    if author_id:
+        query += " AND b.BookAuthorID = ?"
+        params.append(author_id)
+    if min_price:
+        query += " AND b.BookPrice >= ?"
+        params.append(min_price)
+    if max_price:
+        query += " AND b.BookPrice <= ?"
+        params.append(max_price)
+
+    if sort == "price_asc":
+        query += " ORDER BY b.BookPrice ASC"
+    elif sort == "price_desc":
+        query += " ORDER BY b.BookPrice DESC"
+    elif sort == "newest":
+        query += " ORDER BY b.BookID DESC"
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    keys = [col[0] for col in cursor.description]
+    results = [dict(zip(keys, row)) for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+
+    return flask.jsonify(results)
+@book_bp.route('/book/related/<int:category_id>/<int:book_id>', methods=['GET'])
+def get_related_books(category_id, book_id):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        query = """
+            SELECT b.*, c.BookCategoryName, a.AuthorName, p.PublisherName
+            FROM Book b
+            LEFT JOIN BookCategory c ON b.BookCategoryID = c.BookCategoryID
+            LEFT JOIN Author a ON b.BookAuthorID = a.AuthorID
+            LEFT JOIN Publisher p ON b.BookPublisherID = p.PublisherID
+            WHERE b.BookCategoryID = ?
+              AND b.BookID != ?
+            ORDER BY b.BookID DESC
+        """
+
+        cursor.execute(query, (category_id, book_id))
+
+        keys = [col[0] for col in cursor.description]
+        results = [dict(zip(keys, row)) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return flask.jsonify(results)
 
     except Exception as e:
         return flask.jsonify({"mess": str(e)}), 500

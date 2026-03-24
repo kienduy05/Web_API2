@@ -56,30 +56,75 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Book model, IFormFile? imageFile)
         {
-            if (imageFile != null && imageFile.Length > 0)
+            try
             {
-                var fileName = Path.GetFileName(imageFile.FileName);
-                var savePath = Path.Combine(Directory.GetCurrentDirectory(),
-                                            "wwwroot", "images", "books", fileName);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(savePath));
-
-                using (var stream = new FileStream(savePath, FileMode.Create))
+                if (!ModelState.IsValid)
                 {
-                    await imageFile.CopyToAsync(stream);
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    TempData["Error"] = string.Join(" | ", errors);
+
+                    // load lại dropdown
+                    var meta = await bookAPI.GetAllWithMeta();
+                    ViewBag.Categories = meta.Categories;
+                    ViewBag.Authors = meta.Authors;
+                    ViewBag.Publishers = meta.Publishers;
+
+                    return View(model);
                 }
 
-                model.BookImage = fileName;
+                // upload ảnh
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var fileName = Path.GetFileName(imageFile.FileName);
+
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                                  "wwwroot", "images", "books");
+
+                    if (!Directory.Exists(folderPath))
+                        Directory.CreateDirectory(folderPath);
+
+                    var savePath = Path.Combine(folderPath, fileName);
+
+                    using (var stream = new FileStream(savePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    model.BookImage = fileName;
+                }
+
+                var result = await bookAPI.Add(model);
+
+                if (result)
+                {
+                    TempData["Success"] = "Thêm sách thành công";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    var meta = await bookAPI.GetAllWithMeta();
+                    ViewBag.Categories = meta.Categories;
+                    ViewBag.Authors = meta.Authors;
+                    ViewBag.Publishers = meta.Publishers;
+
+                    TempData["Error"] = "API trả về thất bại";
+                    return View(model);
+                }
             }
+            catch (Exception ex)
+            {
+                var meta = await bookAPI.GetAllWithMeta();
+                ViewBag.Categories = meta.Categories;
+                ViewBag.Authors = meta.Authors;
+                ViewBag.Publishers = meta.Publishers;
 
-            var result = await bookAPI.Add(model);
-
-            if (result)
-                TempData["Success"] = "Thêm sách thành công";
-            else
-                TempData["Error"] = "Thêm thất bại";
-
-            return RedirectToAction("Index");
+                TempData["Error"] = "Lỗi: " + ex.Message;
+                return View(model);
+            }
         }
 
         // GET: Edit
