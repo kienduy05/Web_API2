@@ -125,10 +125,28 @@
                             </div>
                         </a>
                     </div>
+                    
                 }
 
             </div>
         </div>
+        <a asp-controller="Book" asp-action="Index"
+               class="btn btn-danger back-to-list">
+            ← Quay lại
+        </a>
+
+        <style>
+                    .back-to-list {
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        z-index: 999;
+                        border-radius: 20px ;
+                        padding: 10px 18px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                        background-color: #ED553B;
+                    }                
+        </style>
 
     </div>
 </section>
