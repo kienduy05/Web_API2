@@ -163,7 +163,7 @@
                                         @if (!string.IsNullOrEmpty(book.BookImage))
                                         {
                                             <img src="@Url.Content($"~/images/books/{book.BookImage}")"
-                                                 style="height:220px;object-fit:cover;" />
+                                                 style="height:220px;object-fit:contain;background:#f8f8f8;" />
                                         }
 
                                         <div class="card-body">
