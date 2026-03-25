@@ -95,14 +95,7 @@
                                    onclick="return confirm('Bạn có chắc muốn xóa không?')">
                                 <i data-feather="trash-2"></i>
                             </a>
-
-                            <a asp-area="Admin"
-                                   asp-controller="Account"
-                                   asp-action="ResetPassword"
-                                   asp-route-customerId="@item.CustomerID"
-                                   class="btn btn-info btn-sm">
-                                <i data-feather="key"></i>
-                            </a>
+                        
                         </td>
                     </tr>
                 }

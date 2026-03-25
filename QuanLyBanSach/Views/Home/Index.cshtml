@@ -10,8 +10,7 @@
 
     <!-- Indicators -->
     <div class="carousel-indicators">
-        <button type="button" data-bs-target="#bookCarousel" data-bs-slide-to="0" class="active"
-                aria-current="true"></button>
+        <button type="button" data-bs-target="#bookCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
         <button type="button" data-bs-target="#bookCarousel" data-bs-slide-to="1"></button>
         <button type="button" data-bs-target="#bookCarousel" data-bs-slide-to="2"></button>
     </div>
@@ -23,11 +22,11 @@
             </div>
             <div class="carousel-item">
                 <img src="~/images/banner/banner2.webp" class="d-block w-100" alt="Book Banner 2">
-            </div>
-            <div class="carousel-item">
-                 <img src="~/images/banner/banner3.webp" class="d-block w-100" alt="Book Banner 3">
-                 </div>
-            </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="~/images/banner/banner3.webp" class="d-block w-100" alt="Book Banner 3">
+                    </div>
+                </div>
 
                 <!-- Controls -->
                 <button class="carousel-control-prev" type="button" data-bs-target="#bookCarousel" data-bs-slide="prev">
@@ -38,33 +37,28 @@
                 </button>
             </div>
 
-    <style>
+            <style>
                 .carousel-item img {
-    width: 100%;
-    height: 650px;      /* chỉnh số này theo ý bạn */
-    object-fit: cover;  /* giữ tỷ lệ, cắt phần dư */
-                   
-}
-    </style>
-
-
+                    width: 100%;
+                    height: 650px;
+                    object-fit: cover;
+                }
+            </style>
 
             <!-- Top Categories Section -->
             <section class="categories-section py-5">
                 <partial name="_PartialCategoriesSection" />
             </section>
 
-
             <!-- eBook Section -->
             <section class="ebook-section py-5">
                 <partial name="_PartialEbookSection" />
             </section>
 
-
-
-@* //Body to code here *@
+            <!-- New Release Section -->
             <section class="new-release-section py-5">
                 <div class="container position-relative">
+
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="fw-bold text-dark">Sách mới</h2>
                         <div>
@@ -80,72 +74,85 @@
                     <!-- Carousel Wrapper -->
                     <div class="book-carousel-wrapper overflow-hidden position-relative">
                         <div class="book-carousel d-flex transition-all">
-                            <!-- Example Book Cards -->
+
                             @foreach (var book in Model.MainBooks)
                             {
                                 <div class="book-card card border-0 me-3">
-                                    <img src="@Url.Content($"~/images/books/{book.BookImage}")"
-                                         class="card-img-top" alt="">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold mb-1">@book.BookName</h6>
-                                        <p class="text-muted mb-1">@book.AuthorName</p>
-                                        <p class="fw-semibold text-orange mb-0">@book.BookPrice đ</p>
-                                    </div>
-                                </div>
+                                    <a asp-controller="Book" asp-action="Detail" asp-route-id="@book.BookID" class="text-decoration-none text-dark">
+                                        <img src="@Url.Content($"~/images/books/{book.BookImage}")"
+                                             class="card-img-top" alt="">
 
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-1">@book.BookName</h6>
+                                            <p class="text-muted mb-1">@book.AuthorName</p>
+                                            <p class="fw-semibold text-orange mb-0">
+                                                @book.BookPrice.ToString("N0") đ
+                                            </p>
+                                        </div>
+                                    </a>
+                                </div>
                             }
+
                         </div>
                     </div>
 
-                            <!-- Indicators -->
-                            <div class="d-flex justify-content-center mt-4">
-                                <span class="indicator active"></span>
-                                <span class="indicator"></span>
-                            </div>
-                        </div>
-                    </section>
+                    <!-- Indicators -->
+                    <div class="d-flex justify-content-center mt-4">
+                        <span class="indicator active"></span>
+                        <span class="indicator"></span>
+                    </div>
 
-@* //End *@
+                </div>
+            </section>
 
-
-
-
-            @* Featured Section *@
+            <!-- Featured Section -->
             <section class="featured-section py-5">
                 <div class="container">
                     <div class="row align-items-center">
+
                         <!-- Left Image -->
                         <div class="col-md-5 text-center">
-                            <img src="@Url.Content($"~/images/books/{Model.FeaturedBook.BookImage}")" alt="Featured Product" class="img-fluid rounded shadow-sm">
-                            </div>
-
-                            <!-- Right Content -->
-                            <div class="col-md-7">
-                                <h5 class="text-uppercase text-muted mb-2">Sản phẩm nổi bật</h5>
-                                <h2 class="fw-bold mb-3">@Model.FeaturedBook.BookName</h2>
-                                <p class="text-secondary mb-3">
-                                    @Model.FeaturedBook.BookDescription
-                                </p>
-                                <h4 class="text-danger mb-4">@Model.FeaturedBook.BookPrice đ</h4>
-                                <a href="#" class="btn btn-dark rounded-pill px-4 py-2">Xem thêm</a>
-                            </div>
+                            <img src="@Url.Content($"~/images/books/{Model.FeaturedBook.BookImage}")"
+                                 alt="Featured Product"
+                                 class="img-fluid rounded shadow-sm">
                         </div>
+
+                        <!-- Right Content -->
+                        <div class="col-md-7">
+                            <h5 class="text-uppercase text-muted mb-2">Sản phẩm nổi bật</h5>
+                            <h2 class="fw-bold mb-3">@Model.FeaturedBook.BookName</h2>
+
+                            <p class="text-secondary mb-3">
+                                @Model.FeaturedBook.BookDescription
+                            </p>
+
+                            <h4 class="text-danger mb-4">
+                                @Model.FeaturedBook.BookPrice.ToString("N0") đ
+                            </h4>
+
+                            <a asp-controller="Book"
+                                   asp-action="Index"
+                                   class="btn btn-dark rounded-pill px-4 py-2">
+                                Xem thêm
+                            </a>
+                        </div>
+
                     </div>
-                </section>
-            @* End featured section *@
-
-
-
+                </div>
+            </section>
 
             <!-- Offer Section -->
             <section class="offer-section container">
                 <div class="row align-items-center">
+
                     <div class="col-md-6 offer-text">
                         <h2>🔥 Giảm giá đến 50% toàn bộ sách – Cơ hội không thể bỏ lỡ!</h2>
+
                         <p>
                             Nhanh tay sở hữu những đầu sách bạn yêu thích với mức giá ưu đãi chưa từng có.
                             Số lượng có hạn – mua ngay hôm nay để không bỏ lỡ cơ hội nâng cấp tri thức với chi phí tiết kiệm nhất!
                         </p>
+
                         <div class="timer">
                             <div>768 <span>Ngày</span></div>
                             <div>01 <span>Giờ</span></div>
@@ -153,24 +160,36 @@
                             <div>55 <span>Giây</span></div>
                         </div>
                     </div>
+
                     <div class="col-md-6 text-center">
-                        <img src="~/LayoutBook/images/Unsplash.png" alt="Books" class="offer-img img-fluid">
+                        <img src="~/LayoutBook/images/Unsplash.png"
+                             alt="Books"
+                             class="offer-img img-fluid">
                         </div>
+
                     </div>
                 </section>
+
                 <!-- Newsletter Section -->
                 <section class="newsletter-section">
                     <h3>Đăng ký nhận thông tin mới nhất</h3>
+
                     <p>
                         Nhận ngay những ưu đãi độc quyền, sách mới phát hành và nội dung hữu ích
                         được gửi trực tiếp đến email của bạn mỗi tuần.
                     </p>
+
                     <div class="newsletter-input">
                         <input type="email" placeholder="Nhập địa chỉ email của bạn">
                         <button>Đăng ký</button>
                     </div>
                 </section>
 
-
-
-
+                <style>
+                    .book-card img {
+                        width: 100%;
+                        height: 250px;
+                        object-fit: contain;
+                        background-color: #fff;
+                    }
+                </style>
