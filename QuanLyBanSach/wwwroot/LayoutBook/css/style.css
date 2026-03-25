@@ -557,3 +557,27 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
+.btn-buy {
+    background-color: #ED553B;
+    transition: all 0.3s ease; /* Tạo hiệu ứng mượt mà */
+    border: none;
+}
+
+    .btn-buy:hover {
+        background-color: #d44931 !important; /* Màu đậm hơn khi hover */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Đổ bóng */
+        transform: translateY(-1px); /* Nút nhích lên một chút */
+        color: #fff !important;
+    }
+
+    .btn-buy:active {
+        transform: translateY(0); /* Nhấn xuống khi click */
+    }
+
+    /* Style cho trạng thái disabled (nếu BookStatus == 0) */
+    .btn-buy:disabled {
+        background-color: #ccc !important;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }

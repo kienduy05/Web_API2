@@ -31,35 +31,72 @@
             </div>
 
             <!-- INFO -->
+            <!-- INFO -->
             <div class="col-lg-7">
 
-                <!-- NAME -->
-                <h2 class="fw-bold text-danger mb-2">
-                    @Model.BookName
-                </h2>
+                <div class="row">
+        
+                    <!-- LEFT: INFO TEXT -->
+                    <div class="col-md-7">
 
-                <!-- AUTHOR -->
-                <p class="text-muted mb-1">
-                    Tác giả: <strong>@Model.AuthorName</strong>
-                </p>
+                        <!-- NAME -->
+                        <h2 class="fw-bold text-danger mb-2">
+                            @Model.BookName
+                        </h2>
 
-                <!-- CATEGORY -->
-                <p class="text-muted mb-1">
-                    Thể loại: <strong>@Model.BookCategoryName</strong>
-                </p>
+                        <!-- AUTHOR -->
+                        <p class="text-muted mb-1">
+                            Tác giả: <strong>@Model.AuthorName</strong>
+                        </p>
 
-                <!-- PUBLISHER -->
-                <p class="text-muted mb-3">
-                    Nhà xuất bản: <strong>@Model.PublisherName</strong>
-                </p>
+                        <!-- CATEGORY -->
+                        <p class="text-muted mb-1">
+                            Thể loại: <strong>@Model.BookCategoryName</strong>
+                        </p>
 
-                <!-- PRICE -->
-                <h3 class="text-danger mb-3">
-                    @Model.BookPrice.ToString("N0") ₫
-                </h3>
+                        <!-- PUBLISHER -->
+                        <p class="text-muted mb-3">
+                            Nhà xuất bản: <strong>@Model.PublisherName</strong>
+                        </p>
+
+                        <!-- PRICE -->
+                        <h3 class="text-danger mb-3">
+                            @Model.BookPrice.ToString("N0") ₫
+                        </h3>
+
+                    </div>
+
+                    <!-- RIGHT: BOX NHỎ -->
+                    <div class="col-md-5">
+                        <div class="info-box p-3">
+
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-truck fs-5 me-2"></i>
+                                <span>Giao hàng toàn quốc</span>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-star fs-5 me-2"></i>
+                                <span>Sản phẩm chính hãng</span>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-gift fs-5 me-2"></i>
+                                <span>Tích điểm đổi quà</span>
+                            </div>
+
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-ticket-perforated fs-5 me-2"></i>
+                                <span>Nhiều ưu đãi</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
 
                 <!-- DESCRIPTION -->
-                <p class="text-muted mb-4">
+                <p class="text-muted mb-4 mt-3">
                     @(string.IsNullOrEmpty(Model.BookDescription)
                         ? "Chưa có mô tả cho sách này."
                         : Model.BookDescription)
@@ -73,21 +110,23 @@
                 <!-- STATUS -->
                 <p class="mb-4">
                     <strong>Trạng thái:</strong>
-                    <span style="color:@(Model.BookStatus == 1 ? "green" : "red")">
-                    @(Model.BookStatus == 1 ? "Đang bán" : "Ngừng bán")
+                    @if (Model.BookStatus == 1)
+                    {
+                        <span class="badge bg-success">Đang bán</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Ngừng bán</span>
+                    }
                 </p>
 
                 <!-- BUTTON -->
                 <div class="d-flex gap-3">
-                    <button class="btn text-white px-4"
-                            style="background:#ED553B;"
+                    <button class="btn btn-buy text-white px-4 d-flex align-items-center"
                         @(Model.BookStatus == 0 ? "disabled" : "")>
+                        <i class="fas fa-shopping-cart me-2"></i>
                         Thêm vào giỏ hàng
                     </button>
-
-                    @* <button class="btn btn-outline-secondary px-4">
-                        Yêu thích
-                    </button> *@
                 </div>
 
             </div>
@@ -112,7 +151,7 @@
                                 {
                                     <img src="@Url.Content($"~/images/books/{item.BookImage}")"
                                          class="card-img-top"
-                                         style="height:200px;object-fit:cover;" />
+                                         style="height:220px;object-fit:contain;background:#f8f8f8;" />
                                 }
 
                                 <div class="card-body">
@@ -149,6 +188,78 @@
                         background-color: #ED553B;
                     }                
         </style>
+            <div class="mt-5 p-4 bg-white shadow-sm rounded">
+                <h5 class="fw-bold mb-4">Đánh giá sản phẩm</h5>
 
+                <div class="row">
+                    <!-- Tổng rating -->
+                    <div class="col-md-3 text-center border-end">
+                        <h1 class="fw-bold">5<span class="fs-5">/5</span></h1>
+                        <div class="text-warning fs-4">★★★★★</div>
+                        <p class="text-muted">(18 đánh giá)</p>
+                    </div>
+
+                    <!-- Thanh rating -->
+                    <div class="col-md-5">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="me-2">@i sao</span>
+                                <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                    <div class="progress-bar bg-warning" style="width:@(i == 5 ? "90%" : i == 4 ? "20%" : "0%")"></div>
+                                </div>
+                                <small>@(i == 5 ? "90%" : i == 4 ? "20%" : "0%")</small>
+                            </div>
+                        }
+                    </div>
+
+                    
+                    
+                </div>
+
+                <hr />
+
+                <!-- Danh sách comment -->
+                <div class="mt-3">
+                    <div class="mb-4">
+                        <strong>ngoc vinh</strong>
+                        <div class="text-warning">★★★★☆</div>
+                        <small class="text-muted">21/03/2026</small>
+                        <p class="mt-2">
+                            Sách rất hay, nội dung sâu sắc và lôi cuốn. Đọc rất cuốn, đáng mua!
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <strong>minh nhật</strong>
+                        <div class="text-warning">★★★★★</div>
+                        <small class="text-muted">20/03/2026</small>
+                        <p class="mt-2">
+                            Nội dung rất chất lượng, trình bày đẹp, giao hàng nhanh.
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <strong>Nam</strong>
+                        <div class="text-warning">★★★★★</div>
+                        <small class="text-muted">16/03/2024</small>
+                        <p class="mt-2">
+                            
+                        Sách rất hay, nội dung sâu sắc và lôi cuốn. Tôi đã dành cả đêm để đọc hết cuốn sách này vì cốt truyện quá tuyệt vời. Cảm ơn Fahasa đã giao hàng nhanh và đóng gói rất cẩn thận, không bị móp góc. Sách rất hay, nội dung sâu sắc và lôi cuốn. Tôi đã dành cả đêm để đọc hết cuốn sách này vì cốt truyện quá tuyệt vời. Cảm ơn Fahasa đã giao hàng nhanh và đóng gói rất cẩn thận, không bị móp góc.
+                        </p>
+                    </div>
+                </div>
+            </div>
     </div>
 </section>
+<style>
+    .info-box {
+        background: linear-gradient(135deg, #eef3ff, #dbe6ff);
+        border: 2px dashed #4a7dff;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+        .info-box i {
+            color: #333;
+        }
+</style>
