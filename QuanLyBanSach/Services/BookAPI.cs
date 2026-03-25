@@ -22,7 +22,13 @@ namespace QuanLyBanSach.Services
         {
             var response = await _httpClient.GetAsync($"{baseUrl}/getall");
             var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<List<Book>>(json);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"API lỗi: {json}");
+            }
+
+            return JsonConvert.DeserializeObject<List<Book>>(json) ?? new List<Book>();
         }
 
 

@@ -251,19 +251,19 @@ def reset_password(id):
         if not cursor.fetchone():
             return flask.jsonify({"mess": "Tài khoản không tồn tại"}), 404
 
-        # reset password = 123
+        # reset password = 123456
         cursor.execute("""
             UPDATE Account
             SET Password=?
             WHERE AccountID=?
-        """, ("123", id))
+        """, ("123456", id))
 
         conn.commit()
 
         cursor.close()
         conn.close()
 
-        return flask.jsonify({"mess": "Đã reset mật khẩu về 123"})
+        return flask.jsonify({"mess": "Đã reset mật khẩu về 123456"})
 
     except Exception as e:
         return flask.jsonify({"mess": str(e)}), 500

@@ -66,6 +66,7 @@ namespace QuanLyBanSach.Services
             return response.IsSuccessStatusCode;
         }
 
+        //Check validate
 
         public async Task<bool> PhoneExists(string phone)
         {

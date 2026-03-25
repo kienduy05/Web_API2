@@ -15,9 +15,10 @@
                 <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1000"
                      class="img-fluid vh-100"
                      style="object-fit: cover;">
+         
                 <div class="overlay-text position-absolute top-50 start-50 translate-middle text-center text-white px-3">
-                    <h2 class="fw-bold">Welcome to <span style="color:#ED553B;">BookNest</span></h2>
-                    <p>Discover, Read & Grow with our curated collection of books</p>
+                    <h2 class="fw-bold">Chào mừng đến với <span style="color:#ED553B;">BookStoreVA1</span></h2>
+                    <p>Khám phá, đọc và phát triển cùng bộ sưu tập sách được chọn lọc của chúng tôi</p>
                 </div>
             </div>
 
@@ -30,14 +31,14 @@
                         <li class="nav-item">
                             <button class="nav-link active fw-semibold" data-bs-toggle="tab"
                                     data-bs-target="#loginTab">
-                                Login
+                                Đăng nhập
                             </button>
                         </li>
 
                         <li class="nav-item">
                             <button class="nav-link fw-semibold" data-bs-toggle="tab"
                                     data-bs-target="#registerTab">
-                                Register
+                                Đăng kí
                             </button>
                         </li>
                     </ul>
@@ -47,7 +48,7 @@
                         <!-- LOGIN -->
                         <div class="tab-pane fade show active" id="loginTab">
 
-                            <h4 class="fw-bold mb-4 text-center text-danger">Login to your account</h4>
+                            <h4 class="fw-bold mb-4 text-center text-danger">Đăng nhập vào tài khoản của bạn</h4>
 
                             @if (TempData["Success"] != null)
                             {
@@ -62,19 +63,19 @@
                             <form asp-controller="Access" asp-action="Login" method="post">
 
                                 <div class="mb-3">
-                                    <label class="form-label">Username</label>
+                                    <label class="form-label">Tên đăng nhập</label>
                                     <input asp-for="Login.Username" class="form-control form-control-lg" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Password</label>
+                                    <label class="form-label">Mật khẩu</label>
                                     <input asp-for="Login.Password" type="password"
                                            class="form-control form-control-lg" />
                                 </div>
 
                                 <button class="btn w-100 py-2 text-white fw-semibold"
                                         style="background-color:#ED553B;">
-                                    Login
+                                    Đăng nhập
                                 </button>
 
                             </form>
@@ -85,8 +86,9 @@
                         <div class="tab-pane fade" id="registerTab">
 
                             <h4 class="fw-bold mb-4 text-center text-danger">
-                                Create your account
+                                Tạo tài khoản của bạn
                             </h4>
+
                             @if (TempData["Success"] != null)
                             {
                                 <div class="alert alert-success">@TempData["Success"]</div>
@@ -96,6 +98,7 @@
                             {
                                 <div class="alert alert-danger">@TempData["Error"]</div>
                             }
+
                             <form asp-controller="Access" asp-action="Register" method="post">
 
                                 <div asp-validation-summary="All" class="text-danger mb-3"></div>
@@ -103,13 +106,13 @@
                                 <div class="row">
 
                                     <div class="col-md-6 mb-3">
-                                        <label>Full Name</label>
+                                        <label>Họ và tên</label>
                                         <input asp-for="Register.CustomerName" class="form-control form-control-lg" />
                                         <span asp-validation-for="Register.CustomerName" class="text-danger"></span>
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label>Phone</label>
+                                        <label>Số điện thoại</label>
                                         <input asp-for="Register.CustomerPhone" class="form-control form-control-lg" />
                                         <span asp-validation-for="Register.CustomerPhone" class="text-danger"></span>
                                     </div>
@@ -123,32 +126,32 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label>Address</label>
+                                    <label>Địa chỉ</label>
                                     <input asp-for="Register.CustomerAddress" class="form-control form-control-lg" />
                                     <span asp-validation-for="Register.CustomerAddress" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label>Username</label>
+                                    <label>Tên đăng nhập</label>
                                     <input asp-for="Register.Username" class="form-control form-control-lg" />
                                     <span asp-validation-for="Register.Username" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label>Password</label>
+                                    <label>Mật khẩu</label>
                                     <input asp-for="Register.Password" type="password" class="form-control form-control-lg" />
                                     <span asp-validation-for="Register.Password" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label>Confirm Password</label>
+                                    <label>Xác nhận mật khẩu</label>
                                     <input asp-for="Register.ConfirmPassword" type="password" class="form-control form-control-lg" />
                                     <span asp-validation-for="Register.ConfirmPassword" class="text-danger"></span>
                                 </div>
 
                                 <button class="btn w-100 py-2 text-white fw-semibold"
                                         style="background-color:#ED553B;">
-                                    Register
+                                    Đăng ký
                                 </button>
 
                             </form>
