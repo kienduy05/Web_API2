@@ -73,7 +73,8 @@
                 <!-- STATUS -->
                 <p class="mb-4">
                     <strong>Trạng thái:</strong>
-                    @(Model.BookStatus == 1 ? "Còn hàng" : "Hết hàng")
+                    <span style="color:@(Model.BookStatus == 1 ? "green" : "red")">
+                    @(Model.BookStatus == 1 ? "Đang bán" : "Ngừng bán")
                 </p>
 
                 <!-- BUTTON -->
@@ -84,9 +85,9 @@
                         Thêm vào giỏ hàng
                     </button>
 
-                    <button class="btn btn-outline-secondary px-4">
+                    @* <button class="btn btn-outline-secondary px-4">
                         Yêu thích
-                    </button>
+                    </button> *@
                 </div>
 
             </div>
