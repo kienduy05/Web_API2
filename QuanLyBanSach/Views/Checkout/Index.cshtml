@@ -1,4 +1,4 @@
-@model QuanLyBanSach.Controllers.CheckoutViewModel
+@model QuanLyBanSach.Models.CheckoutViewModel
 @{
     Layout = "~/Views/Shared/_LayoutBook.cshtml";
     ViewData["Title"] = "Thanh Toán";
@@ -159,58 +159,19 @@
 
 @section Scripts {
     <script>
-        // Hàm validate dữ liệu đơn giản
         function validateCheckoutForm() {
-            const receiverName = document.getElementById('receiverName').value.trim();
-            const receiverPhone = document.getElementById('receiverPhone').value.trim();
-            const receiverAddress = document.getElementById('receiverAddress').value.trim();
-            const agreeTerms = document.getElementById('agreeTerms').checked;
+            const name = document.getElementById('receiverName').value.trim();
+            const phone = document.getElementById('receiverPhone').value.trim();
+            const address = document.getElementById('receiverAddress').value.trim();
+            const agree = document.getElementById('agreeTerms').checked;
 
-            // Xóa lỗi trước đó
-            document.getElementById('receiverNameError').style.display = 'none';
-            document.getElementById('receiverPhoneError').style.display = 'none';
-            document.getElementById('receiverAddressError').style.display = 'none';
-
-            let isValid = true;
-
-            // Kiểm tra tên người nhận không trống
-            if (!receiverName) {
-                document.getElementById('receiverNameError').textContent = 'Vui lòng nhập tên người nhận';
-                document.getElementById('receiverNameError').style.display = 'block';
-                isValid = false;
+            if (!name || !phone || !address || !/^[0-9]{10}$/.test(phone) || !agree) {
+                if (!name || !phone || !address) alert('Vui lòng điền đầy đủ thông tin');
+                else if (!/^[0-9]{10}$/.test(phone)) alert('SĐT phải là 10 số');
+                else alert('Vui lòng đồng ý với điều khoản');
+                return false;
             }
-
-            // Kiểm tra số điện thoại: 10-11 số
-            if (!receiverPhone) {
-                document.getElementById('receiverPhoneError').textContent = 'Vui lòng nhập số điện thoại';
-                document.getElementById('receiverPhoneError').style.display = 'block';
-                isValid = false;
-            }
-            else if (!/^[0-9]{10,11}$/.test(receiverPhone)) {
-                document.getElementById('receiverPhoneError').textContent = 'Số điện thoại phải có 10-11 chữ số';
-                document.getElementById('receiverPhoneError').style.display = 'block';
-                isValid = false;
-            }
-
-            // Kiểm tra địa chỉ tối thiểu 3 ký tự
-            if (!receiverAddress) {
-                document.getElementById('receiverAddressError').textContent = 'Vui lòng nhập địa chỉ giao hàng';
-                document.getElementById('receiverAddressError').style.display = 'block';
-                isValid = false;
-            }
-            else if (receiverAddress.length < 3) {
-                document.getElementById('receiverAddressError').textContent = 'Địa chỉ giao hàng phải có ít nhất 3 ký tự';
-                document.getElementById('receiverAddressError').style.display = 'block';
-                isValid = false;
-            }
-
-            // Kiểm tra checkbox
-            if (!agreeTerms) {
-                alert('Vui lòng đồng ý với các điều khoản và chính sách bán hàng');
-                isValid = false;
-            }
-
-            return isValid;
+            return true;
         }
 
         // Khi bấm nút "Xác nhận đặt hàng"

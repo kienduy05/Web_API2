@@ -22,32 +22,32 @@ const indicators = document.querySelectorAll(".indicator");
 const scrollLeftBtn = document.getElementById("scrollLeft");
 const scrollRightBtn = document.getElementById("scrollRight");
 
-let currentGroup = 0;
-const totalGroups = indicators.length;
+if (carousel && scrollLeftBtn && scrollRightBtn && indicators.length > 0) {
+  let currentGroup = 0;
+  const totalGroups = indicators.length;
 
-function scrollToGroup(index) {
-  const scrollAmount = carousel.clientWidth * index;
-  carousel.style.transform = `translateX(-${scrollAmount}px)`;
+  function scrollToGroup(index) {
+    const scrollAmount = carousel.clientWidth * index;
+    carousel.style.transform = `translateX(-${scrollAmount}px)`;
+    indicators.forEach((dot, i) => dot.classList.toggle("active", i === index));
+    currentGroup = index;
+  }
 
-  indicators.forEach((dot, i) => dot.classList.toggle("active", i === index));
-  currentGroup = index;
+  scrollRightBtn.addEventListener("click", () => {
+    currentGroup = (currentGroup + 1) % totalGroups;
+    scrollToGroup(currentGroup);
+  });
+
+  scrollLeftBtn.addEventListener("click", () => {
+    currentGroup = (currentGroup - 1 + totalGroups) % totalGroups;
+    scrollToGroup(currentGroup);
+  });
+
+  setInterval(() => {
+    currentGroup = (currentGroup + 1) % totalGroups;
+    scrollToGroup(currentGroup);
+  }, 5000);
 }
-
-scrollRightBtn.addEventListener("click", () => {
-  currentGroup = (currentGroup + 1) % totalGroups;
-  scrollToGroup(currentGroup);
-});
-
-scrollLeftBtn.addEventListener("click", () => {
-  currentGroup = (currentGroup - 1 + totalGroups) % totalGroups;
-  scrollToGroup(currentGroup);
-});
-
-// Optional Auto Scroll
-setInterval(() => {
-  currentGroup = (currentGroup + 1) % totalGroups;
-  scrollToGroup(currentGroup);
-}, 5000);
 
 
 

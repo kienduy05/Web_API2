@@ -83,14 +83,9 @@ namespace QuanLyBanSach.Controllers
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"========== CreateOrder START ==========");
-                System.Diagnostics.Debug.WriteLine($"Request: ReceiverName={request.ReceiverName}, Phone={request.ReceiverPhone}, Address={request.ReceiverAddress}, Total={request.Total}");
-
                 // Kiểm tra đăng nhập
                 var customerId = HttpContext.Session.GetInt32("CustomerID");
                 var customerName = HttpContext.Session.GetString("CustomerName");
-
-                System.Diagnostics.Debug.WriteLine($"Session - CustomerId: {customerId}, CustomerName: {customerName}");
 
                 if (customerId == null || string.IsNullOrEmpty(customerName))
                 {
@@ -99,12 +94,7 @@ namespace QuanLyBanSach.Controllers
 
                 // Lấy cart từ session
                 var cart = GetCart();
-                System.Diagnostics.Debug.WriteLine($"Cart items: {cart.Count}");
-
-                if (cart.Count == 0)
-                {
-                    return BadRequest(new { success = false, message = "Giỏ hàng trống" });
-                }
+                if (cart.Count == 0) return BadRequest(new { success = false, message = "Giỏ hàng trống" });
 
                 // Tạo đơn hàng
                 var order = new Order
@@ -119,8 +109,6 @@ namespace QuanLyBanSach.Controllers
                     OrderStatus = 0
                 };
 
-                System.Diagnostics.Debug.WriteLine($"Order object created - CustomerID: {order.CustomerID}, Total: {order.OrderTotalAmount}");
-
                 // Tạo DTO để gửi tới Backend Python
                 var orderDTO = new OrderRequestDTO
                 {
@@ -134,52 +122,22 @@ namespace QuanLyBanSach.Controllers
                     OrderCreatedDate = order.OrderCreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")
                 };
 
-                System.Diagnostics.Debug.WriteLine($"OrderRequestDTO created: CustomerID={orderDTO.CustomerID}");
-
                 // Test connection to Backend API
-                System.Diagnostics.Debug.WriteLine($"Testing connection to Backend API...");
                 bool apiConnected = await _orderAPI.TestConnection();
-                if (!apiConnected)
-                {
-                    System.Diagnostics.Debug.WriteLine($"ERROR: Cannot connect to Backend API at {baseUrl}/orders");
-                    return BadRequest(new { success = false, message = "❌ Không thể kết nối Backend API (localhost:5000). Vui lòng kiểm tra:\n1. Backend API có chạy không?\n2. Port 5000 có đang dùng không?" });
-                }
-
-                System.Diagnostics.Debug.WriteLine($"Backend API connection OK");
+                if (!apiConnected) return BadRequest(new { success = false, message = "❌ Không thể kết nối Backend API (localhost:5000)." });
 
                 // Lưu Order
                 bool orderAdded = await _orderAPI.Add(orderDTO);
-                System.Diagnostics.Debug.WriteLine($"Order.Add() returned: {orderAdded}");
-
-                if (!orderAdded)
-                {
-                    System.Diagnostics.Debug.WriteLine($"ERROR: Failed to add order to database");
-                    return BadRequest(new { success = false, message = "Lỗi khi tạo đơn hàng. Vui lòng kiểm tra kết nối Backend API (localhost:5000/orders/add)" });
-                }
+                if (!orderAdded) return BadRequest(new { success = false, message = "Lỗi khi tạo đơn hàng." });
 
                 // Lấy danh sách đơn hàng để lấy ID vừa tạo
-                System.Diagnostics.Debug.WriteLine($"Fetching all orders to get new order ID...");
                 var orders = await _orderAPI.GetAll();
-                System.Diagnostics.Debug.WriteLine($"Total orders in system: {orders?.Count}");
-
-                if (orders == null || orders.Count == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine($"ERROR: No orders found in database");
-                    return BadRequest(new { success = false, message = "Không thể lấy dữ liệu đơn hàng từ database" });
-                }
+                if (orders == null || orders.Count == 0) return BadRequest(new { success = false, message = "Không thể lấy dữ liệu đơn hàng từ database" });
 
                 var newOrder = orders.LastOrDefault();
+                if (newOrder == null) return BadRequest(new { success = false, message = "Không thể lấy ID đơn hàng vừa tạo" });
 
-                if (newOrder == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"ERROR: Last order is null");
-                    return BadRequest(new { success = false, message = "Không thể lấy ID đơn hàng vừa tạo" });
-                }
-
-                System.Diagnostics.Debug.WriteLine($"New order ID: {newOrder.OrderID}");
-
-                // Tạo OrderDetail cho từng sản phẩm
-                int detailCount = 0;
+                // Tạo OrderDetail cho từng sản phẩm và giảm tồn kho
                 foreach (var cartItem in cart)
                 {
                     var book = await _bookAPI.GetById(cartItem.BookId);
@@ -194,29 +152,24 @@ namespace QuanLyBanSach.Controllers
                             UnitPrice = book.BookPrice
                         };
 
-                        bool detailAdded = await _orderDetailAPI.Add(orderDetail);
-                        System.Diagnostics.Debug.WriteLine($"OrderDetail for BookID {cartItem.BookId}: {(detailAdded ? "SUCCESS" : "FAILED")}");
-                        if (detailAdded) detailCount++;
+                        await _orderDetailAPI.Add(orderDetail);
+
+                        // Giảm tồn kho
+                        if (book.BookQuantity >= cartItem.Quantity)
+                        {
+                            book.BookQuantity -= cartItem.Quantity;
+                            await _bookAPI.Update(book);
+                        }
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Total OrderDetails added: {detailCount}/{cart.Count}");
-
                 // Xóa giỏ hàng từ session
                 HttpContext.Session.Remove(CartSessionKey);
-                System.Diagnostics.Debug.WriteLine($"Cart cleared from session");
 
-                System.Diagnostics.Debug.WriteLine($"========== CreateOrder SUCCESS ==========");
                 return Ok(new { success = true, message = "Đặt hàng thành công", orderId = newOrder.OrderID });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"========== CreateOrder ERROR ==========");
-                System.Diagnostics.Debug.WriteLine($"Exception: {ex.GetType().Name}");
-                System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
-                System.Diagnostics.Debug.WriteLine($"========== CreateOrder ERROR END ==========");
-
                 return BadRequest(new { success = false, message = $"Lỗi hệ thống: {ex.Message}" });
             }
         }
@@ -230,61 +183,5 @@ namespace QuanLyBanSach.Controllers
             }
             return JsonSerializer.Deserialize<List<CartItem>>(cartJson) ?? new List<CartItem>();
         }
-    }
-
-    public class CheckoutItem
-    {
-        public int BookId { get; set; }
-        public string BookName { get; set; }
-        public decimal BookPrice { get; set; }
-        public int Quantity { get; set; }
-        public decimal ItemTotal { get; set; }
-    }
-
-    public class CheckoutViewModel
-    {
-        public List<CheckoutItem> Items { get; set; }
-        public decimal SubTotal { get; set; }
-        public decimal Shipping { get; set; }
-        public decimal Total { get; set; }
-        public string CustomerName { get; set; }
-        public int CustomerId { get; set; }
-    }
-
-    public class OrderRequest
-    {
-        public string ReceiverName { get; set; }
-        public string ReceiverPhone { get; set; }
-        public string ReceiverAddress { get; set; }
-        public decimal Total { get; set; }
-    }
-
-    // DTO để gửi tới Backend Python (với tên field phù hợp)
-    public class OrderRequestDTO
-    {
-        // Sử dụng lowercase property names để match với JSON được serialize
-        [JsonPropertyName("customerID")]
-        public int CustomerID { get; set; }
-
-        [JsonPropertyName("customerName")]
-        public string CustomerName { get; set; }
-
-        [JsonPropertyName("receiverName")]
-        public string ReceiverName { get; set; }
-
-        [JsonPropertyName("receiverPhone")]
-        public string ReceiverPhone { get; set; }
-
-        [JsonPropertyName("receiverAddress")]
-        public string ReceiverAddress { get; set; }
-
-        [JsonPropertyName("orderTotalAmount")]
-        public decimal OrderTotalAmount { get; set; }
-
-        [JsonPropertyName("orderStatus")]
-        public int OrderStatus { get; set; }
-
-        [JsonPropertyName("orderCreatedDate")]
-        public string OrderCreatedDate { get; set; }
     }
 }

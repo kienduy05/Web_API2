@@ -1,5 +1,4 @@
-﻿
-@model List<QuanLyBanSach.Controllers.CartItemDetail>
+﻿@model List<QuanLyBanSach.Models.CartItemDetail>
 @{
     Layout = "~/Views/Shared/_LayoutBook.cshtml";
 }
@@ -76,98 +75,83 @@
 
 @section Scripts {
     <script>
-        // Hàm xử lý thanh toán
-        function proceedToCheckout() {
+        const formatCurrency = (value) => value.toLocaleString('vi-VN') + ' ₫';
+
+        const parsePrice = (text) => parseFloat(text.replace(/\s/g, '').replace('₫', '').replace(/,/g, ''));
+
+        function updateSummary() {
             const cartItems = document.querySelectorAll('.cart-item');
+            const subtotal = Array.from(cartItems).reduce((sum, item) => {
+                const price = parsePrice(item.querySelector('.fw-semibold.text-danger')?.textContent || '0');
+                const qty = parseInt(item.querySelector('.quantity')?.value || '0');
+                return sum + (price * qty);
+            }, 0);
 
-            if (cartItems.length === 0) {
-                alert('⚠️ Không có đơn để thanh toán\n\nVui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.');
-                return false;
-            }
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('total').textContent = formatCurrency(subtotal + 50000);
 
-            // Nếu có sản phẩm, chuyển hướng tới trang checkout
-            window.location.href = '@Url.Action("Index", "Checkout")';
+            const isEmpty = cartItems.length === 0;
+            document.getElementById('emptyCartMessage').style.display = isEmpty ? 'block' : 'none';
+            document.getElementById('checkoutBtn').disabled = isEmpty;
         }
 
-        // Hàm kiểm tra và cập nhật trạng thái giỏ hàng
-        function updateCartState() {
-            const cartItems = document.querySelectorAll('.cart-item');
-            const emptyMessage = document.getElementById('emptyCartMessage');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-
-            if (cartItems.length === 0) {
-                emptyMessage.style.display = 'block';
-                checkoutBtn.disabled = true;
-            } else {
-                emptyMessage.style.display = 'none';
-                checkoutBtn.disabled = false;
-            }
-        }
-
-        // Hàm tính toán lại tóm tắt đơn hàng
-        function updateOrderSummary() {
-            let subtotal = 0;
-            const cartItems = document.querySelectorAll('.cart-item');
-
-            cartItems.forEach(item => {
-                const priceText = item.querySelector('.fw-semibold.text-danger').textContent;
-                // Parse: "90,000 ₫" -> remove spaces and ₫ -> "90,000" -> remove comma -> 90000
-                const price = parseFloat(priceText.replace(/\s/g, '').replace('₫', '').replace(/,/g, ''));
-                const quantity = parseInt(item.querySelector('.quantity').value);
-                subtotal += price * quantity;
-            });
-
-            const shipping = 50000; // Vận chuyển: 50,000 đồng
-            const total = subtotal + shipping;
-
-            // Cập nhật HTML với định dạng "90,000 ₫"
-            document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
-            document.getElementById('total').textContent = total.toLocaleString('vi-VN') + ' ₫';
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Kiểm tra trạng thái ban đầu
-            updateCartState();
-            updateOrderSummary();
-
-            // Xử lý nút xóa
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const cartItem = this.closest('.cart-item');
-                    const bookId = cartItem.getAttribute('data-book-id');
-
-                    // Hiển thị xác nhận
-                    if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-                        // Loại bỏ mục khỏi DOM với hiệu ứng
-                        cartItem.style.transition = 'opacity 0.3s ease-out';
+        const removeFromCart = (bookId, cartItem) => {
+            console.log(`Removing bookId: ${bookId}`);
+            fetch(`/Cart/RemoveFromCart`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bookId: bookId })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    console.log('Response:', data);
+                    if (data.success) {
                         cartItem.style.opacity = '0';
+                        setTimeout(() => { cartItem.remove(); updateSummary(); }, 300);
+                    } else alert('❌ ' + data.message);
+                })
+                .catch(e => alert('Lỗi xóa: ' + e.message));
+        };
 
-                        setTimeout(() => {
-                            cartItem.remove();
-                            updateOrderSummary(); // Cập nhật tóm tắt đơn hàng
-                            updateCartState(); // Kiểm tra giỏ hàng trống
+        const updateQuantity = (bookId, quantity) => {
+            if (quantity <= 0) {
+                alert('Số lượng phải lớn hơn 0');
+                location.reload();
+                return;
+            }
+            fetch(`/Cart/UpdateQuantity/${bookId}`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) { alert('❌ ' + data.message); location.reload(); }
+                    else updateSummary();
+                })
+                .catch(() => alert('Lỗi cập nhật số lượng'));
+        };
 
-                            // TODO: Gửi yêu cầu xóa đến máy chủ
-                            // fetch('@Url.Action("RemoveFromCart", "Cart")/' + bookId, { method: 'POST' });
-                        }, 300);
-                    }
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSummary();
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const cartItem = btn.closest('.cart-item');
+                    const bookId = parseInt(cartItem?.getAttribute('data-book-id'));
+                    console.log(`Delete clicked - bookId: ${bookId}, isNaN: ${isNaN(bookId)}`);
+                    if (!isNaN(bookId) && confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) 
+                        removeFromCart(bookId, cartItem);
                 });
             });
 
-            // Xử lý thay đổi số lượng
-            const quantityInputs = document.querySelectorAll('.quantity');
-            quantityInputs.forEach(input => {
+            document.querySelectorAll('.quantity').forEach(input => {
                 input.addEventListener('change', function() {
                     const cartItem = this.closest('.cart-item');
-                    const bookId = cartItem.getAttribute('data-book-id');
-                    const quantity = this.value;
-
-                    console.log('Cập nhật số lượng sản phẩm ' + bookId + ' thành ' + quantity);
-                    updateOrderSummary(); // Cập nhật tóm tắt đơn hàng
-                    // TODO: Gửi yêu cầu cập nhật số lượng đến máy chủ
-                    // fetch('@Url.Action("UpdateQuantity", "Cart")/' + bookId, { method: 'POST', body: JSON.stringify({ quantity: quantity }) });
+                    const bookId = parseInt(cartItem?.getAttribute('data-book-id'));
+                    const quantity = parseInt(this.value);
+                    console.log(`Quantity changed - bookId: ${bookId}, quantity: ${quantity}, isNaN: ${isNaN(bookId)}`);
+                    if (!isNaN(bookId) && !isNaN(quantity)) updateQuantity(bookId, quantity);
                 });
             });
         });
