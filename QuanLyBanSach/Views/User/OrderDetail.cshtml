@@ -13,26 +13,34 @@
             Thông tin nhận hàng
         </div>
         <div class="card-body">
-            <p><b>Người nhận:</b> @Model.Order.ReceiverName</p>
-            <p><b>SĐT:</b> @Model.Order.ReceiverPhone</p>
-            <p><b>Địa chỉ:</b> @Model.Order.ReceiverAddress</p>
-            <p><b>Ngày:</b> @Model.Order.OrderCreatedDate.ToString("dd/MM/yyyy")</p>
-
-            <p>
-                <b>Trạng thái:</b>
-                @switch (Model.Order.OrderStatus)
-                {
-                    case 0:
-                        <span class="badge bg-warning">Đang chuẩn bị</span>
-                        break;
-                    case 1:
-                        <span class="badge bg-info">Đang giao</span>
-                        break;
-                    case 2:
-                        <span class="badge bg-success">Đã giao</span>
-                        break;
-                }
-            </p>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p><b>Mã đơn hàng:</b> #@Model.Order.OrderID</p>
+                    <p><b>Mã khách hàng:</b> @Model.Order.CustomerID</p>
+                    <p><b>Người nhận:</b> @Model.Order.ReceiverName</p>
+                    <p><b>SĐT:</b> @Model.Order.ReceiverPhone</p>
+                    <p><b>Địa chỉ:</b> @Model.Order.ReceiverAddress</p>
+                </div>
+                <div class="col-md-6">
+                    <p><b>Tên khách hàng:</b> @Model.Order.CustomerName</p>
+                    <p><b>Ngày:</b> @Model.Order.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                    <p>
+                        <b>Trạng thái:</b>
+                        @switch (Model.Order.OrderStatus)
+                        {
+                            case 0:
+                                <span class="badge bg-warning">Đang chuẩn bị</span>
+                                break;
+                            case 1:
+                                <span class="badge bg-info">Đang giao</span>
+                                break;
+                            case 2:
+                                <span class="badge bg-success">Đã giao</span>
+                                break;
+                        }
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -43,33 +51,36 @@
                 <th>Sách</th>
                 <th>SL</th>
                 <th>Giá</th>
+                <th>Vận chuyển</th>
                 <th>Thành tiền</th>
             </tr>
         </thead>
 
         <tbody>
             @{
-                decimal total = 0;
+                decimal subtotal = 0;
+                decimal shipping = 50000; // Tiền vận chuyển
+                int itemCount = Model.Details.Count;
+                int index = 0;
             }
 
             @foreach (var item in Model.Details)
             {
+                index++;
                 var sub = item.Quantity * item.UnitPrice;
-                total += sub;
+                subtotal += sub;
+                var totalWithShipping = sub + (index == 1 ? shipping : 0); // Cộng vận chuyển vào sản phẩm đầu tiên
 
                 <tr>
                     <td>@item.BookName</td>
                     <td>@item.Quantity</td>
                     <td>@item.UnitPrice.ToString("N0") đ</td>
-                    <td>@sub.ToString("N0") đ</td>
+                    <td>@(index == 1 ? shipping.ToString("N0") + " đ" : "-")</td>
+                    <td>@totalWithShipping.ToString("N0") đ</td>
                 </tr>
             }
         </tbody>
     </table>
-
-    <div class="text-end">
-        <h4 class="text-danger">Tổng: @total.ToString("N0") đ</h4>
-    </div>
 
     <a asp-action="Index" class="btn btn-secondary mt-3">⬅ Quay lại</a>
 

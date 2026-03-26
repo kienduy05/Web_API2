@@ -193,8 +193,8 @@
                     <tr>
                         <th>Mã đơn</th>
                         <th>Mã khách</th>
+                        <th>Tên khách</th>
                         <th>Ngày tạo</th>
-                        <th>Người nhận</th>
                         <th>SĐT nhận</th>
                         <th>Tổng tiền</th>
                         <th>Trạng thái</th>
@@ -224,10 +224,10 @@
                         <tr>
                             <td><strong>#@item.OrderID</strong></td>
                             <td>@item.CustomerID</td>
+                            <td>@item.CustomerName</td>
                             <td>@item.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.ReceiverName</td>
                             <td>@item.ReceiverPhone</td>
-                            <td>@item.OrderTotalAmount.ToString("C")</td>
+                            <td>@item.OrderTotalAmount.ToString("N0") đ</td>
                             <td>
                                 <span class="badge bg-@statusBadge">@statusText</span>
                             </td>

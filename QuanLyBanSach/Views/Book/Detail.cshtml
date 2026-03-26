@@ -122,7 +122,8 @@
 
                 <!-- BUTTON -->
                 <div class="d-flex gap-3">
-                    <button class="btn btn-buy text-white px-4 d-flex align-items-center"
+                    <button type="button" class="btn btn-buy text-white px-4 d-flex align-items-center"
+                        data-bs-toggle="modal" data-bs-target="#addToCartModal"
                         @(Model.BookStatus == 0 ? "disabled" : "")>
                         <i class="fas fa-shopping-cart me-2"></i>
                         Thêm vào giỏ hàng
@@ -263,3 +264,115 @@
             color: #333;
         }
 </style>
+
+<!-- Modal: Thêm vào giỏ hàng -->
+<div class="modal fade" id="addToCartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm vào giỏ hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3"><strong>Sản phẩm:</strong> @Model.BookName</p>
+                <p class="mb-3"><strong>Giá:</strong> @Model.BookPrice.ToString("N0") ₫</p>
+                <p class="mb-3"><strong>Số lượng còn:</strong> @Model.BookQuantity</p>
+
+                <div class="mb-3">
+                    <label for="quantityInput" class="form-label"><strong>Số lượng:</strong></label>
+                    <input type="number" class="form-control" id="quantityInput" 
+                           value="1" min="1" max="@Model.BookQuantity">
+                    <small class="text-danger" id="quantityError" style="display:none;"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmAddToCart">Thêm vào giỏ hàng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const bookId = @Model.BookID;
+        const maxQuantity = @Model.BookQuantity;
+
+        // Prevent input from exceeding max quantity
+        document.getElementById('quantityInput').addEventListener('input', function() {
+            const quantity = parseInt(this.value) || 0;
+            const errorDiv = document.getElementById('quantityError');
+
+            if (quantity > maxQuantity) {
+                this.value = maxQuantity;
+                errorDiv.textContent = `Số lượng không thể vượt quá ${maxQuantity}`;
+                errorDiv.style.display = 'block';
+            } else if (quantity < 1 && this.value !== '') {
+                errorDiv.textContent = 'Vui lòng nhập số lượng >= 1';
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+
+        // Handle add to cart
+        document.getElementById('confirmAddToCart').addEventListener('click', function() {
+            const quantityInput = document.getElementById('quantityInput');
+            let quantity = parseInt(quantityInput.value) || 0;
+            const errorDiv = document.getElementById('quantityError');
+
+            // Final validation before sending
+            if (quantity < 1) {
+                errorDiv.textContent = 'Vui lòng nhập số lượng >= 1';
+                errorDiv.style.display = 'block';
+                quantityInput.focus();
+                return;
+            }
+
+            if (quantity > maxQuantity) {
+                quantity = maxQuantity;
+                quantityInput.value = maxQuantity;
+                errorDiv.textContent = `Số lượng không thể vượt quá ${maxQuantity}`;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Send to server
+            fetch('@Url.Action("AddToCart", "Cart")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    bookId: bookId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thêm vào giỏ hàng thành công!');
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('addToCartModal')).hide();
+                    // Reset form
+                    quantityInput.value = '1';
+                    errorDiv.style.display = 'none';
+                    // Optionally redirect to cart
+                    // location.href = '@Url.Action("Index", "Cart")';
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            });
+        });
+
+        // Reset modal when closed
+        document.getElementById('addToCartModal').addEventListener('hidden.bs.modal', function() {
+            document.getElementById('quantityInput').value = '1';
+            document.getElementById('quantityError').style.display = 'none';
+        });
+    </script>
+}

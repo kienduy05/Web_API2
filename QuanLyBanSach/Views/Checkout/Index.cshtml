@@ -1,0 +1,312 @@
+@model QuanLyBanSach.Controllers.CheckoutViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutBook.cshtml";
+    ViewData["Title"] = "Thanh Toán";
+}
+
+<section class="container py-5">
+    <h4 class="section-title">Tiến hành thanh toán</h4>
+    
+    <div class="row g-4">
+        <!-- Danh sách sản phẩm -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="fw-bold mb-0">📦 Sản phẩm đặt hàng</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead class="border-bottom">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr class="border-bottom">
+                                    <td>
+                                        <strong>@item.BookName</strong>
+                                    </td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.BookPrice.ToString("N0") ₫</td>
+                                    <td class="text-end">
+                                        <strong>@item.ItemTotal.ToString("N0") ₫</strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Thông tin giao hàng -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="fw-bold mb-0">📍 Thông tin giao hàng</h6>
+                </div>
+                <div class="card-body">
+                    <form id="checkoutForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerName" class="form-label">Tên khách hàng</label>
+                                <input type="text" class="form-control" id="customerName" 
+                                       value="@Model.CustomerName" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="receiverName" class="form-label">Tên người nhận *</label>
+                                <input type="text" class="form-control" id="receiverName" 
+                                       placeholder="Nhập tên người nhận" required>
+                                <small class="text-danger" id="receiverNameError" style="display:none;"></small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="receiverPhone" class="form-label">Số điện thoại *</label>
+                                <input type="text" class="form-control" id="receiverPhone" 
+                                       placeholder="Nhập số điện thoại" required>
+                                <small class="text-danger" id="receiverPhoneError" style="display:none;"></small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="receiverAddress" class="form-label">Địa chỉ giao hàng *</label>
+                                <input type="text" class="form-control" id="receiverAddress" 
+                                       placeholder="Nhập địa chỉ giao hàng" required>
+                                <small class="text-danger" id="receiverAddressError" style="display:none;"></small>
+                            </div>
+                        </div>
+
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                            <label class="form-check-label" for="agreeTerms">
+                                Tôi đang đồng ý với các điều khoản và chính sách bán hàng
+                            </label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tóm tắt đơn hàng -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-white">
+                    <h6 class="fw-bold mb-0">💰 Tóm tắt đơn hàng</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính:</span>
+                        <strong>@Model.SubTotal.ToString("N0") ₫</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Vận chuyển:</span>
+                        <strong>@Model.Shipping.ToString("N0") ₫</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fs-5">Tổng tiền:</span>
+                        <strong class="fs-5 text-danger">@Model.Total.ToString("N0") ₫</strong>
+                    </div>
+
+                    <button type="button" class="btn btn-theme w-100 btn-lg" id="checkoutBtn">
+                        <i class="bi bi-credit-card me-2"></i>
+                        Xác nhận đặt hàng
+                    </button>
+
+                    <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary w-100 mt-2">
+                        ← Quay lại giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal xác nhận đặt hàng -->
+<div class="modal fade" id="confirmOrderModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="confirmOrderModalLabel">
+                    <i class="bi bi-question-circle me-2 text-warning"></i>Xác nhận đặt hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Bạn có chắc chắn muốn đặt hàng với các thông tin sau?</p>
+                <div class="alert alert-info small">
+                    <strong>Tên người nhận:</strong> <span id="modalReceiverName"></span><br>
+                    <strong>Số điện thoại:</strong> <span id="modalReceiverPhone"></span><br>
+                    <strong>Địa chỉ giao hàng:</strong> <span id="modalReceiverAddress"></span><br>
+                    <strong>Tổng tiền:</strong> <span id="modalTotalAmount" class="text-danger"></span>
+                </div>
+                <p class="text-muted small mb-0">Sau khi xác nhận, bạn không thể thay đổi thông tin này.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-theme" id="confirmOrderBtn">
+                    <i class="bi bi-check-circle me-2"></i>Xác nhận đặt hàng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hàm validate dữ liệu đơn giản
+        function validateCheckoutForm() {
+            const receiverName = document.getElementById('receiverName').value.trim();
+            const receiverPhone = document.getElementById('receiverPhone').value.trim();
+            const receiverAddress = document.getElementById('receiverAddress').value.trim();
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            // Xóa lỗi trước đó
+            document.getElementById('receiverNameError').style.display = 'none';
+            document.getElementById('receiverPhoneError').style.display = 'none';
+            document.getElementById('receiverAddressError').style.display = 'none';
+
+            let isValid = true;
+
+            // Kiểm tra tên người nhận không trống
+            if (!receiverName) {
+                document.getElementById('receiverNameError').textContent = 'Vui lòng nhập tên người nhận';
+                document.getElementById('receiverNameError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Kiểm tra số điện thoại: 10-11 số
+            if (!receiverPhone) {
+                document.getElementById('receiverPhoneError').textContent = 'Vui lòng nhập số điện thoại';
+                document.getElementById('receiverPhoneError').style.display = 'block';
+                isValid = false;
+            }
+            else if (!/^[0-9]{10,11}$/.test(receiverPhone)) {
+                document.getElementById('receiverPhoneError').textContent = 'Số điện thoại phải có 10-11 chữ số';
+                document.getElementById('receiverPhoneError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Kiểm tra địa chỉ tối thiểu 3 ký tự
+            if (!receiverAddress) {
+                document.getElementById('receiverAddressError').textContent = 'Vui lòng nhập địa chỉ giao hàng';
+                document.getElementById('receiverAddressError').style.display = 'block';
+                isValid = false;
+            }
+            else if (receiverAddress.length < 3) {
+                document.getElementById('receiverAddressError').textContent = 'Địa chỉ giao hàng phải có ít nhất 3 ký tự';
+                document.getElementById('receiverAddressError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Kiểm tra checkbox
+            if (!agreeTerms) {
+                alert('Vui lòng đồng ý với các điều khoản và chính sách bán hàng');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Khi bấm nút "Xác nhận đặt hàng"
+        document.getElementById('checkoutBtn').addEventListener('click', function() {
+            if (!validateCheckoutForm()) {
+                return;
+            }
+
+            // Lấy dữ liệu từ form
+            const receiverName = document.getElementById('receiverName').value.trim();
+            const receiverPhone = document.getElementById('receiverPhone').value.trim();
+            const receiverAddress = document.getElementById('receiverAddress').value.trim();
+
+            // Lấy tổng tiền từ trang
+            const totalText = document.querySelector('.fs-5.text-danger').textContent;
+            const total = parseFloat(totalText.replace(/\s/g, '').replace('₫', '').replace(/,/g, ''));
+
+            // Cập nhật thông tin trong modal
+            document.getElementById('modalReceiverName').textContent = receiverName;
+            document.getElementById('modalReceiverPhone').textContent = receiverPhone;
+            document.getElementById('modalReceiverAddress').textContent = receiverAddress;
+            document.getElementById('modalTotalAmount').textContent = total.toLocaleString('vi-VN') + ' ₫';
+
+            // Lưu dữ liệu vào data attributes để sử dụng khi xác nhận
+            const confirmBtn = document.getElementById('confirmOrderBtn');
+            confirmBtn.dataset.receiverName = receiverName;
+            confirmBtn.dataset.receiverPhone = receiverPhone;
+            confirmBtn.dataset.receiverAddress = receiverAddress;
+            confirmBtn.dataset.total = total;
+
+            // Hiển thị modal
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+            confirmModal.show();
+        });
+
+        // Khi bấm xác nhận trong modal
+        document.getElementById('confirmOrderBtn').addEventListener('click', function() {
+            const confirmBtn = this;
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Đang xử lý...';
+
+            // Lấy dữ liệu từ data attributes
+            const receiverName = confirmBtn.dataset.receiverName;
+            const receiverPhone = confirmBtn.dataset.receiverPhone;
+            const receiverAddress = confirmBtn.dataset.receiverAddress;
+            const total = parseFloat(confirmBtn.dataset.total);
+
+            // Tạo request data
+            const orderData = {
+                receiverName: receiverName,
+                receiverPhone: receiverPhone,
+                receiverAddress: receiverAddress,
+                total: total
+            };
+
+            console.log('Gửi request:', orderData);
+
+            // Gửi request tới server
+            fetch('@Url.Action("CreateOrder", "Checkout")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    // Đặt hàng thành công
+                    alert('✅ ' + data.message + '\n\nMã đơn hàng: #' + data.orderId);
+
+                    // Chuyển hướng đến trang xác nhận hoặc lịch sử đơn hàng
+                    window.location.href = '@Url.Action("Index", "User")';
+                } else {
+                    // Lỗi
+                    alert('❌ ' + data.message);
+
+                    // Enable lại button và đóng modal
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Xác nhận đặt hàng';
+                    bootstrap.Modal.getInstance(document.getElementById('confirmOrderModal')).hide();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Lỗi hệ thống: ' + error.message);
+
+                // Enable lại button
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Xác nhận đặt hàng';
+                bootstrap.Modal.getInstance(document.getElementById('confirmOrderModal')).hide();
+            });
+        });
+    </script>
+}

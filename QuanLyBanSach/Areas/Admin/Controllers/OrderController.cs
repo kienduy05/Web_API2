@@ -52,7 +52,7 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
             var pagedData = data
-                .OrderByDescending(x => x.OrderCreatedDate)
+                .OrderBy(x => x.OrderID)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();

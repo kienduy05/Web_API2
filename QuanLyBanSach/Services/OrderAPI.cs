@@ -6,9 +6,32 @@ namespace QuanLyBanSach.Services
 {
     public class OrderAPI
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient _httpClient = new HttpClient() 
+        { 
+            Timeout = TimeSpan.FromSeconds(30) // Set timeout khi khởi tạo
+        };
 
         private string baseUrl = "http://localhost:5000/orders";
+
+        // TEST CONNECTION
+        public async Task<bool> TestConnection()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Testing connection to {baseUrl}/getall...");
+                var response = await _httpClient.GetAsync($"{baseUrl}/getall");
+
+                bool isConnected = response.IsSuccessStatusCode;
+                System.Diagnostics.Debug.WriteLine($"Connection test result: {(isConnected ? "SUCCESS" : "FAILED")} ({response.StatusCode})");
+
+                return isConnected;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Connection test failed: {ex.Message}");
+                return false;
+            }
+        }
 
         // GET ALL
         public async Task<List<Order>> GetAll()
@@ -86,16 +109,52 @@ namespace QuanLyBanSach.Services
             }
         }
 
-        // ADD
-        public async Task<bool> Add(Order order)
+        // ADD (sử dụng object bất kỳ)
+        public async Task<bool> Add(object orderData)
         {
-            var json = JsonConvert.SerializeObject(order);
+            try
+            {
+                // Sử dụng System.Text.Json với JsonPropertyName support
+                var options = new System.Text.Json.JsonSerializerOptions 
+                { 
+                    PropertyNamingPolicy = null // Preserve property names
+                };
 
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var json = System.Text.Json.JsonSerializer.Serialize(orderData, options);
+                System.Diagnostics.Debug.WriteLine($"========== OrderAPI.Add START ==========");
+                System.Diagnostics.Debug.WriteLine($"Sending JSON to {baseUrl}/add:");
+                System.Diagnostics.Debug.WriteLine($"{json}");
 
-            var response = await _httpClient.PostAsync($"{baseUrl}/add", content);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            return response.IsSuccessStatusCode;
+                var response = await _httpClient.PostAsync($"{baseUrl}/add", content);
+
+                System.Diagnostics.Debug.WriteLine($"Response Status Code: {response.StatusCode}");
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"Response Body: {responseContent}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    System.Diagnostics.Debug.WriteLine($"ERROR: HTTP {response.StatusCode}");
+                    System.Diagnostics.Debug.WriteLine($"Error Response: {responseContent}");
+                    System.Diagnostics.Debug.WriteLine($"========== OrderAPI.Add FAILED ==========");
+                    return false;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"SUCCESS: Order added to Backend");
+                System.Diagnostics.Debug.WriteLine($"========== OrderAPI.Add SUCCESS ==========");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"========== OrderAPI.Add EXCEPTION ==========");
+                System.Diagnostics.Debug.WriteLine($"Exception Type: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"========== OrderAPI.Add EXCEPTION END ==========");
+                return false;
+            }
         }
 
         // UPDATE
