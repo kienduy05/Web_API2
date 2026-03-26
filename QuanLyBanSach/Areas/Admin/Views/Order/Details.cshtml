@@ -6,7 +6,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold">Chi tiết đơn hàng #@Model.OrderID</h3>
+    <h3 class="fw-bold">📦 Đơn hàng #@Model.OrderID</h3>
     <a asp-action="Index" class="btn btn-secondary">
         <i data-feather="arrow-left"></i> Quay lại
     </a>
@@ -23,20 +23,29 @@
 
 <div class="row">
     <div class="col-md-8">
+        <!-- THÔNG TIN ĐƠN HÀNG -->
         <div class="card mb-3">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">Thông tin đơn hàng</h5>
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Thông tin nhận hàng</h5>
             </div>
             <div class="card-body">
-                <div class="row mb-3">
+                <div class="row mb-2">
                     <div class="col-md-6">
                         <p><strong>Mã đơn hàng:</strong> #@Model.OrderID</p>
                         <p><strong>Mã khách hàng:</strong> @Model.CustomerID</p>
-                        <p><strong>Tên khách hàng:</strong> @Model.CustomerName</p>
-                        <p><strong>Ngày tạo:</strong> @Model.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Tổng tiền:</strong> <span class="text-danger">@Model.OrderTotalAmount.ToString("C")</span></p>
+                        <p><strong>Tên khách hàng:</strong> @Model.CustomerName</p>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <p><strong>Người nhận:</strong> @Model.ReceiverName</p>
+                        <p><strong>SĐT:</strong> @Model.ReceiverPhone</p>
+                        <p><strong>Địa chỉ:</strong> @Model.ReceiverAddress</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Ngày tạo:</strong> @Model.OrderCreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
                         <p><strong>Trạng thái:</strong>
                             @{
                                 var statusBadge = Model.OrderStatus switch
@@ -46,25 +55,22 @@
                                     2 => "success",
                                     _ => "secondary"
                                 };
+                                var statusText = Model.OrderStatus switch
+                                {
+                                    0 => "Đang chuẩn bị",
+                                    1 => "Đang giao",
+                                    2 => "Đã giao",
+                                    _ => "Không xác định"
+                                };
                             }
-                            <span class="badge bg-@statusBadge">@ViewBag.StatusText</span>
+                            <span class="badge bg-@statusBadge">@statusText</span>
                         </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">Thông tin người nhận</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>Tên người nhận:</strong> @Model.ReceiverName</p>
-                <p><strong>Số điện thoại:</strong> @Model.ReceiverPhone</p>
-                <p><strong>Địa chỉ:</strong> @Model.ReceiverAddress</p>
-            </div>
-        </div>
-
+        <!-- CHI TIẾT SẢN PHẨM -->
         <div class="card mb-3">
             <div class="card-header bg-light">
                 <h5 class="card-title mb-0">Chi tiết sản phẩm</h5>
@@ -72,28 +78,36 @@
             <div class="card-body">
                 @if (orderDetails != null && orderDetails.Count > 0)
                 {
-                    <table class="table table-sm table-hover">
-                        <thead class="table-light">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
                             <tr>
-                                
-                                <th>Mã sách</th>
-                                <th>Tên sách</th>
-                                <th>Số lượng</th>
+                                <th>Sách</th>
+                                <th>SL</th>
                                 <th>Giá</th>
-                                <th class="text-end">Thành tiền</th>
+                                <th>Vận chuyển</th>
+                                <th>Thành tiền</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                decimal subtotal = 0;
+                                decimal shipping = 50000;
+                                int itemCount = orderDetails.Count;
+                                int index = 0;
+                            }
                             @foreach (var detail in orderDetails)
                             {
+                                index++;
                                 decimal totalPrice = detail.Quantity * detail.UnitPrice;
+                                subtotal += totalPrice;
+                                var totalWithShipping = totalPrice + (index == 1 ? shipping : 0);
+
                                 <tr>
-                                    <td>#@detail.BookID</td>
                                     <td>@detail.BookName</td>
-                                    
                                     <td>@detail.Quantity</td>
-                                    <td>@detail.UnitPrice.ToString("C")</td>
-                                    <td class="text-end">@totalPrice.ToString("C")</td>
+                                    <td>@detail.UnitPrice.ToString("N0") đ</td>
+                                    <td>@(index == 1 ? shipping.ToString("N0") + " đ" : "-")</td>
+                                    <td>@totalWithShipping.ToString("N0") đ</td>
                                 </tr>
                             }
                         </tbody>
@@ -123,8 +137,15 @@
                             2 => "success",
                             _ => "secondary"
                         };
+                        var currentStatusText = Model.OrderStatus switch
+                        {
+                            0 => "Đang chuẩn bị",
+                            1 => "Đang giao",
+                            2 => "Đã giao",
+                            _ => "Không xác định"
+                        };
                     }
-                    <span class="badge bg-@currentStatusBadge" style="font-size: 0.9rem;">@ViewBag.StatusText</span>
+                    <span class="badge bg-@currentStatusBadge">@currentStatusText</span>
                 </div>
 
                 <a asp-action="EditStatus" 

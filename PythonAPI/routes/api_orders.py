@@ -201,6 +201,15 @@ def filter_by_status(status):
 def add_orders():
     try:
         data = flask.request.json
+
+        # Validate required fields
+        required_fields = ["customerID", "orderCreatedDate", "receiverName",
+                           "receiverPhone", "receiverAddress", "orderTotalAmount", "orderStatus"]
+
+        for field in required_fields:
+            if field not in data:
+                return flask.jsonify({"mess": f"Missing field: {field}"}), 400
+
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -210,13 +219,13 @@ def add_orders():
         """
 
         cursor.execute(command, (
-            data["CustomerID"],
-            data["OrderCreatedDate"],
-            data["ReceiverName"],
-            data["ReceiverPhone"],
-            data["ReceiverAddress"],
-            data["OrderTotalAmount"],
-            data["OrderStatus"]
+            data["customerID"],
+            data["orderCreatedDate"],
+            data["receiverName"],
+            data["receiverPhone"],
+            data["receiverAddress"],
+            data["orderTotalAmount"],
+            data["orderStatus"]
         ))
         conn.commit()
 
