@@ -16,7 +16,7 @@ namespace QuanLyBanSach.Controllers
         {
             HomeIndexViewModel viewModel = new HomeIndexViewModel
             {
-                MainBooks = await _bookAPI.GetAll(),
+                MainBooks = (await _bookAPI.GetAll()).Take(8).ToList(),
                 FeaturedBook = await _bookAPI.GetById(1)
             };
 
