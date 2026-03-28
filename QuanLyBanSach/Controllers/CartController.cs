@@ -9,11 +9,11 @@ namespace QuanLyBanSach.Controllers
     public class CartController : Controller
     {
         private const string CartSessionKey = "Cart";
-        private readonly BookAPI _bookAPI;
+        private readonly CartService _cartService;
 
         public CartController()
         {
-            _bookAPI = new BookAPI();
+            _cartService = new CartService();
         }
 
         public async Task<IActionResult> Index()
@@ -22,23 +22,7 @@ namespace QuanLyBanSach.Controllers
             var cart = GetCart();
 
             // Get book details for each cart item
-            var cartItems = new List<CartItemDetail>();
-            foreach (var item in cart)
-            {
-                var book = await _bookAPI.GetById(item.BookId);
-                if (book != null)
-                {
-                    cartItems.Add(new CartItemDetail
-                    {
-                        BookId = item.BookId,
-                        BookName = book.BookName,
-                        BookPrice = book.BookPrice,
-                        BookImage = book.BookImage,
-                        PublisherName = book.PublisherName,
-                        Quantity = item.Quantity
-                    });
-                }
-            }
+            var cartItems = await _cartService.GetCartDetailsAsync(cart);
 
             return View(cartItems);
         }
@@ -48,54 +32,21 @@ namespace QuanLyBanSach.Controllers
         {
             try
             {
-                // Validate input
-                if (request.BookId <= 0 || request.Quantity <= 0)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
-                }
-
-                // Get book info to check stock
-                var book = await _bookAPI.GetById(request.BookId);
-                if (book == null)
-                {
-                    return Json(new { success = false, message = "Sách không tồn tại" });
-                }
-
-                // Get cart from session
                 var cart = GetCart();
+                var result = await _cartService.AddToCartAsync(request.BookId, request.Quantity, cart);
 
-                // Check if item already in cart
-                var existingItem = cart.FirstOrDefault(c => c.BookId == request.BookId);
-                int totalQuantityInCart = request.Quantity;
-
-                if (existingItem != null)
+                if (!result.success)
                 {
-                    totalQuantityInCart = existingItem.Quantity + request.Quantity;
+                    return Json(new { success = false, message = result.message });
                 }
 
-                // Check if total quantity exceeds available stock
-                if (totalQuantityInCart > book.BookQuantity)
+                if (result.newItem != null)
                 {
-                    return Json(new { success = false, message = $"chỉ mua tối đa = {book.BookQuantity}" });
+                    cart.Add(result.newItem);
                 }
 
-                if (existingItem != null)
-                {
-                    existingItem.Quantity += request.Quantity;
-                }
-                else
-                {
-                    cart.Add(new CartItem 
-                    { 
-                        BookId = request.BookId, 
-                        Quantity = request.Quantity 
-                    });
-                }
-
-                // Save cart to session
                 SaveCart(cart);
-
-                return Json(new { success = true, message = "Thêm vào giỏ hàng thành công" });
+                return Json(new { success = true, message = result.message });
             }
             catch (Exception ex)
             {
@@ -108,29 +59,21 @@ namespace QuanLyBanSach.Controllers
         {
             try
             {
-                if (request == null || id <= 0 || request.Quantity <= 0)
+                if (request == null)
                 {
                     return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
                 }
 
-                var book = await _bookAPI.GetById(id);
-                if (book == null) return Json(new { success = false, message = "Sách không tồn tại" });
-
-                if (request.Quantity > book.BookQuantity)
-                {
-                    return Json(new { success = false, message = $"chỉ mua tối đa = {book.BookQuantity}" });
-                }
-
                 var cart = GetCart();
-                var cartItem = cart.FirstOrDefault(c => c.BookId == id);
-                if (cartItem != null)
+                var result = await _cartService.UpdateQuantityAsync(id, request.Quantity, cart);
+
+                if (!result.success)
                 {
-                    cartItem.Quantity = request.Quantity;
-                    SaveCart(cart);
-                    return Json(new { success = true, message = "Cập nhật số lượng thành công" });
+                    return Json(new { success = false, message = result.message });
                 }
 
-                return Json(new { success = false, message = "Sản phẩm không có trong giỏ hàng" });
+                SaveCart(cart);
+                return Json(new { success = true, message = result.message });
             }
             catch (Exception ex)
             {
