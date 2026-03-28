@@ -74,6 +74,7 @@
 </section>
 
 @section Scripts {
+    <script src="~/js/services/cartService.js"></script>
     <script>
         const formatCurrency = (value) => value.toLocaleString('vi-VN') + ' ₫';
 
@@ -97,12 +98,7 @@
 
         const removeFromCart = (bookId, cartItem) => {
             console.log(`Removing bookId: ${bookId}`);
-            fetch(`/Cart/RemoveFromCart`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bookId: bookId })
-            })
-                .then(r => r.json())
+            cartService.removeFromCart(bookId)
                 .then(data => {
                     console.log('Response:', data);
                     if (data.success) {
@@ -119,12 +115,7 @@
                 location.reload();
                 return;
             }
-            fetch(`/Cart/UpdateQuantity/${bookId}`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quantity })
-            })
-                .then(r => r.json())
+            cartService.updateQuantity(bookId, quantity)
                 .then(data => {
                     if (!data.success) { alert('❌ ' + data.message); location.reload(); }
                     else updateSummary();

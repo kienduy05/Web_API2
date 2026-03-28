@@ -158,6 +158,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/services/checkoutService.js"></script>
     <script>
         function validateCheckoutForm() {
             const name = document.getElementById('receiverName').value.trim();
@@ -230,13 +231,7 @@
             console.log('Gửi request:', orderData);
 
             // Gửi request tới server
-            fetch('@Url.Action("CreateOrder", "Checkout")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(orderData)
-            })
+            checkoutService.createOrder(orderData)
             .then(response => {
                 console.log('Response status:', response.status);
                 return response.json();
