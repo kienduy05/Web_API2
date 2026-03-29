@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace QuanLyBanSach.Services
 {
-    public class CartService
+    public class CartAPI
     {
         private readonly BookAPI _bookAPI;
 
-        public CartService()
+        public CartAPI()
         {
             _bookAPI = new BookAPI();
         }

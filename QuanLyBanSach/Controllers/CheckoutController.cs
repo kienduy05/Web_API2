@@ -10,12 +10,12 @@ namespace QuanLyBanSach.Controllers
     public class CheckoutController : Controller
     {
         private const string CartSessionKey = "Cart";
-        private readonly CheckoutLogicService _checkoutLogicService;
+        private readonly CheckoutAPI _checkoutLogicService;
         private const string baseUrl = "http://localhost:5000";
 
         public CheckoutController()
         {
-            _checkoutLogicService = new CheckoutLogicService();
+            _checkoutLogicService = new CheckoutAPI();
         }
 
         public async Task<IActionResult> Index()

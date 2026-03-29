@@ -9,11 +9,11 @@ namespace QuanLyBanSach.Controllers
     public class CartController : Controller
     {
         private const string CartSessionKey = "Cart";
-        private readonly CartService _cartService;
+        private readonly CartAPI _cartService;
 
         public CartController()
         {
-            _cartService = new CartService();
+            _cartService = new CartAPI();
         }
 
         public async Task<IActionResult> Index()
