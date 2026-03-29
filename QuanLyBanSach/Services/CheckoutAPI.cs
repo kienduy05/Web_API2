@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace QuanLyBanSach.Services
 {
-    public class CheckoutLogicService
+    public class CheckoutAPI
     {
         private readonly BookAPI _bookAPI;
         private readonly OrderAPI _orderAPI;
         private readonly OrderDetailAPI _orderDetailAPI;
 
-        public CheckoutLogicService()
+        public CheckoutAPI()
         {
             _bookAPI = new BookAPI();
             _orderAPI = new OrderAPI();
@@ -83,9 +83,6 @@ namespace QuanLyBanSach.Services
                 OrderStatus = order.OrderStatus,
                 OrderCreatedDate = order.OrderCreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")
             };
-
-            bool apiConnected = await _orderAPI.TestConnection();
-            if (!apiConnected) return (false, "❌ Không thể kết nối Backend API (localhost:5000).", null);
 
             bool orderAdded = await _orderAPI.Add(orderDTO);
             if (!orderAdded) return (false, "Lỗi khi tạo đơn hàng.", null);

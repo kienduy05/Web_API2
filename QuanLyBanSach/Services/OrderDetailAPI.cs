@@ -13,131 +13,60 @@ namespace QuanLyBanSach.Services
         // GET ALL
         public async Task<List<OrderDetail>> GetAll()
         {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{baseUrl}/getall");
+            var response = await _httpClient.GetAsync($"{baseUrl}/getall");
+            if (!response.IsSuccessStatusCode) return new List<OrderDetail>();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new List<OrderDetail>();
-                }
-
-                var json = await response.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<List<OrderDetail>>(json) ?? new List<OrderDetail>();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GetAll Error: {ex.Message}");
-                return new List<OrderDetail>();
-            }
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<OrderDetail>>(json) ?? new List<OrderDetail>();
         }
 
         // GET BY ID
         public async Task<OrderDetail> GetById(int id)
         {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{baseUrl}/getbyid/{id}");
+            var response = await _httpClient.GetAsync($"{baseUrl}/getbyid/{id}");
+            if (!response.IsSuccessStatusCode) return null;
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var json = await response.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<OrderDetail>(json);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GetById Error: {ex.Message}");
-                return null;
-            }
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<OrderDetail>(json);
         }
 
         // GET BY ORDER ID
         public async Task<List<OrderDetail>> GetByOrderId(int orderId)
         {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{baseUrl}/getbyorderid/{orderId}");
+            var response = await _httpClient.GetAsync($"{baseUrl}/getbyorderid/{orderId}");
+            if (!response.IsSuccessStatusCode) return new List<OrderDetail>();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new List<OrderDetail>();
-                }
+            var json = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(json)) return new List<OrderDetail>();
 
-                var json = await response.Content.ReadAsStringAsync();
-
-                if (string.IsNullOrEmpty(json))
-                {
-                    return new List<OrderDetail>();
-                }
-
-                return JsonConvert.DeserializeObject<List<OrderDetail>>(json) ?? new List<OrderDetail>();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GetByOrderId Error: {ex.Message}");
-                return new List<OrderDetail>();
-            }
+            return JsonConvert.DeserializeObject<List<OrderDetail>>(json) ?? new List<OrderDetail>();
         }
 
         // ADD
         public async Task<bool> Add(OrderDetail orderDetail)
         {
-            try
-            {
-                var json = JsonConvert.SerializeObject(orderDetail);
+            var json = JsonConvert.SerializeObject(orderDetail);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{baseUrl}/add", content);
 
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync($"{baseUrl}/add", content);
-
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Add Error: {ex.Message}");
-                return false;
-            }
+            return response.IsSuccessStatusCode;
         }
 
         // UPDATE
         public async Task<bool> Update(OrderDetail orderDetail)
         {
-            try
-            {
-                var json = JsonConvert.SerializeObject(orderDetail);
+            var json = JsonConvert.SerializeObject(orderDetail);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"{baseUrl}/update", content);
 
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PutAsync($"{baseUrl}/update", content);
-
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Update Error: {ex.Message}");
-                return false;
-            }
+            return response.IsSuccessStatusCode;
         }
 
         // DELETE
         public async Task<bool> Delete(int id)
         {
-            try
-            {
-                var response = await _httpClient.DeleteAsync($"{baseUrl}/delete/{id}");
-
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Delete Error: {ex.Message}");
-                return false;
-            }
+            var response = await _httpClient.DeleteAsync($"{baseUrl}/delete/{id}");
+            return response.IsSuccessStatusCode;
         }
     }
 }
