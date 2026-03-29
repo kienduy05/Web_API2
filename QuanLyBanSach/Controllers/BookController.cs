@@ -10,18 +10,29 @@ namespace QuanLyBanSach.Controllers
         BookCategoryAPI _categoryAPI = new BookCategoryAPI();
         AuthorAPI _authorAPI = new AuthorAPI();
 
-        public async Task<IActionResult> Index(int? categoryId, int? authorId,
+        public async Task<IActionResult> Index(string keyword, int? categoryId, int? authorId,
                                                decimal? minPrice, decimal? maxPrice,
                                                string sort, int page = 1)
         {
             int pageSize = 9;
             var categoryTask = _categoryAPI.GetAll();
             var authorTask = _authorAPI.GetAll();
-            var bookTask = _bookAPI.Filter(categoryId, authorId, minPrice, maxPrice, sort);
+            List<Book> data;
 
-            await Task.WhenAll(categoryTask, authorTask, bookTask);
+            if (!string.IsNullOrEmpty(keyword))
+            {
+ 
+                data = await _bookAPI.Search(keyword);
+            }
+            else
+            {
 
-            var data = bookTask.Result;
+                data = await _bookAPI.Filter(categoryId, authorId, minPrice, maxPrice, sort);
+            }
+
+            await Task.WhenAll(categoryTask, authorTask);
+
+           
 
             int totalItems = data.Count();
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);

@@ -48,10 +48,21 @@
                 <img src="~/LayoutBook/images/sample logo 1.png" class="me-2" alt="" srcset="" width="40px">       
             </a>
 
-            <form class="d-none d-md-flex me-auto ms-3 search-bar">
-                <input class="form-control" type="search" placeholder="Bạn cần tìm Sách gì?" />
-                <button class="btn" type="submit"><i class="bi bi-search"></i></button>
-            </form>
+                <form class="d-none d-md-flex me-auto ms-3 search-bar"
+                      method="get"
+                      asp-controller="Book"
+                      asp-action="Index">
+
+                    <input class="form-control"
+                           type="search"
+                           name="keyword"
+                           placeholder="Bạn cần tìm sách gì?"
+                           value="@Context.Request.Query["keyword"]" />
+
+                    <button class="btn" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
 
                 <div class="d-flex align-items-center gap-3">
 
