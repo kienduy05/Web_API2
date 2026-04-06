@@ -11,13 +11,19 @@ namespace QuanLyBanSach.Services
         public List<Author> Authors { get; set; }
         public List<Publisher> Publishers { get; set; }
     }
-
+    class CacheItem
+    {
+        public Book Data { get; set; }
+        public DateTime ExpireTime { get; set; }
+    }
     public class BookAPI
     {
+        static Dictionary<int, CacheItem> cache = new();
+        static TimeSpan cacheDuration = TimeSpan.FromMinutes(5);
         private static readonly HttpClient _httpClient = new HttpClient();
         private string baseUrl = "http://localhost:5000/book";
 
-        // Dùng cho HomeController (trang chủ khách hàng)
+        // (trang chủ khách hàng)
         public async Task<List<Book>> GetAll()
         {
             var response = await _httpClient.GetAsync($"{baseUrl}/getall");
@@ -39,20 +45,32 @@ namespace QuanLyBanSach.Services
             return JsonConvert.DeserializeObject<BookMetaResponse>(json);
         }
 
-        // GET BY ID
-        static Dictionary<int, Book> cache = new();
 
         public async Task<Book> GetById(int id)
         {
             if (cache.ContainsKey(id))
-                return cache[id];
+            {
+                var item = cache[id];
 
+                // kiểm tra hết hạn
+                if (item.ExpireTime > DateTime.Now)
+                {
+                    return item.Data; 
+                }
+                else
+                {
+                    cache.Remove(id); 
+                }
+            }
             var response = await _httpClient.GetAsync($"{baseUrl}/getbyid/{id}");
             var json = await response.Content.ReadAsStringAsync();
             var book = JsonConvert.DeserializeObject<Book>(json);
 
-            cache[id] = book;
-            
+            cache[id] = new CacheItem
+            {
+                Data = book,
+                ExpireTime = DateTime.Now.Add(cacheDuration)
+            };
 
             return book;
         }
@@ -91,7 +109,17 @@ namespace QuanLyBanSach.Services
         public async Task<bool> Delete(int id)
         {
             var response = await _httpClient.DeleteAsync($"{baseUrl}/delete/{id}");
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+            {
+                if (cache.ContainsKey(id))
+                {
+                    cache.Remove(id);
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         // SEARCH
