@@ -109,9 +109,22 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
         [HttpPost("EditStatus/{id}")]
         public async Task<IActionResult> EditStatus(int id, int newStatus)
         {
-            if (newStatus < 0 || newStatus > 2)
+            var order = await orderAPI.GetById(id);
+            if (order == null)
+            {
+                TempData["Error"] = "Đơn hàng không tồn tại";
+                return RedirectToAction("Index");
+            }
+
+            if (newStatus < 0 || newStatus > 3)
             {
                 TempData["Error"] = "Trạng thái không hợp lệ";
+                return RedirectToAction("Details", new { id });
+            }
+
+            if (newStatus < order.OrderStatus)
+            {
+                TempData["Error"] = "Không thể chuyển về trạng thái trước đó của đơn hàng";
                 return RedirectToAction("Details", new { id });
             }
 
@@ -134,6 +147,7 @@ namespace QuanLyBanSach.Areas.Admin.Controllers
                 0 => "Đang chuẩn bị",
                 1 => "Đang giao",
                 2 => "Đã giao",
+                3 => "Đã huỷ",
                 _ => "Không xác định"
             };
         }
