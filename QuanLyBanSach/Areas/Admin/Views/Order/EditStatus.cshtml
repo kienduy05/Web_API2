@@ -53,6 +53,7 @@
                         0 => "Đang chuẩn bị",
                         1 => "Đang giao",
                         2 => "Đã giao",
+                        3 => "Đã huỷ",
                         _ => "Không xác định"
                     };
 
@@ -61,6 +62,7 @@
                         0 => "warning",
                         1 => "info",
                         2 => "success",
+                        3 => "danger",
                         _ => "secondary"
                     };
                 }
@@ -79,29 +81,21 @@
                         <label for="newStatus" class="form-label"><strong>Chọn trạng thái mới:</strong></label>
                         <select id="newStatus" name="newStatus" class="form-select" required>
                             <option value="">-- Chọn trạng thái --</option>
-                            @if (Model.OrderStatus == 0)
+                            @for (int i = 0; i <= 3; i++)
                             {
-                                <option value="0" selected>Đang chuẩn bị</option>
-                            }
-                            else
-                            {
-                                <option value="0">Đang chuẩn bị</option>
-                            }
-                            @if (Model.OrderStatus == 1)
-                            {
-                                <option value="1" selected>Đang giao</option>
-                            }
-                            else
-                            {
-                                <option value="1">Đang giao</option>
-                            }
-                            @if (Model.OrderStatus == 2)
-                            {
-                                <option value="2" selected>Đã giao</option>
-                            }
-                            else
-                            {
-                                <option value="2">Đã giao</option>
+                                var stName = i switch { 0 => "Đang chuẩn bị", 1 => "Đang giao", 2 => "Đã giao", 3 => "Đã huỷ", _ => "" };
+                                if (i == Model.OrderStatus)
+                                {
+                                    <option value="@i" selected>@stName</option>
+                                }
+                                else if (i < Model.OrderStatus)
+                                {
+                                    <option value="@i" disabled>@stName</option>
+                                }
+                                else
+                                {
+                                    <option value="@i">@stName</option>
+                                }
                             }
                         </select>
                     </div>
@@ -120,6 +114,10 @@
                             <li class="list-group-item">
                                 <span class="badge bg-success">2 - Đã giao</span>
                                 <p class="mb-0">Đơn hàng đã được giao thành công cho khách hàng</p>
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge bg-danger">3 - Đã huỷ</span>
+                                <p class="mb-0">Đơn hàng đã bị huỷ</p>
                             </li>
                         </ul>
                     </div>

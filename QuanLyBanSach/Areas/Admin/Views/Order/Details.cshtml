@@ -53,6 +53,7 @@
                                     0 => "warning",
                                     1 => "info",
                                     2 => "success",
+                                    3 => "danger",
                                     _ => "secondary"
                                 };
                                 var statusText = Model.OrderStatus switch
@@ -60,6 +61,7 @@
                                     0 => "Đang chuẩn bị",
                                     1 => "Đang giao",
                                     2 => "Đã giao",
+                                    3 => "Đã huỷ",
                                     _ => "Không xác định"
                                 };
                             }
@@ -135,6 +137,7 @@
                             0 => "warning",
                             1 => "info",
                             2 => "success",
+                            3 => "danger",
                             _ => "secondary"
                         };
                         var currentStatusText = Model.OrderStatus switch
@@ -142,6 +145,7 @@
                             0 => "Đang chuẩn bị",
                             1 => "Đang giao",
                             2 => "Đã giao",
+                            3 => "Đã huỷ",
                             _ => "Không xác định"
                         };
                     }
